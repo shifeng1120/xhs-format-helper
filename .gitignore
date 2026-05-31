@@ -1,14 +1,20 @@
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 *.swp
+*.tmp
 
 # IDE
 .vscode/
 .idea/
 
+# Build artifacts
+*.zip
+*.crx
+*.pem
+
 # Java (crx4chrome tools etc.)
 *.class
 
-# Temp
-*.tmp
+# Payment / private
+payment/activation-codes-*.txt

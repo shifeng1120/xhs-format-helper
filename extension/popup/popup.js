@@ -6,7 +6,11 @@
   'use strict';
 
   const PRO_KEY_PREFIX = 'XHS-PRO-';
+<<<<<<< HEAD
   const BUY_URL = 'https://mianbaoduo.com/xxxxx'; // ⚠️ TODO: 替换为面包多商品链接（创建商品后更新）
+=======
+  const BUY_URL = 'https://mianbaoduo.com/xxxxx'; // TODO: 替换为真实面包多链接
+>>>>>>> 4536a51 (🎉 initial: 小红书排版助手 v1.0.0)
   const EDITOR_URLS = [
     'https://creator.xiaohongshu.com/publish/publish',
     'https://creator.xiaohongshu.com/note/editor',
@@ -181,7 +185,11 @@
   // 反馈
   els.btnContact.addEventListener('click', () => {
     // TODO: 替换为实际反馈方式
+<<<<<<< HEAD
     chrome.tabs.create({ url: 'https://github.com/xhs-format-helper/xhs-format-helper/issues' });
+=======
+    chrome.tabs.create({ url: 'https://github.com/your-repo/issues' });
+>>>>>>> 4536a51 (🎉 initial: 小红书排版助手 v1.0.0)
   });
 
   // ---------- 辅助 ----------
