@@ -25,7 +25,7 @@
 ## 📥 下载安装
 
 ### 方式一：GitHub Release（推荐）
-1. 下载最新版：https://github.com/xhs-format-helper/xhs-format-helper/releases
+1. 下载最新版：https://github.com/shifeng1120/xhs-format-helper/releases
 2. 解压 `.zip` 文件
 3. Chrome 打开 `chrome://extensions` → 开启「开发者模式」
 4. 点击「加载已解压的扩展程序」→ 选择解压文件夹
@@ -107,4 +107,4 @@ xhs-format-helper/
 ## 📞 联系 & 反馈
 
 - **GitHub Issues**：报告 Bug / 建议新功能
-- **邮箱**：your-email@example.com
+- **邮箱**：1398210194@qq.com
