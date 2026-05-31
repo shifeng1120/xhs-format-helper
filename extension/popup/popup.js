@@ -6,7 +6,7 @@
   'use strict';
 
   const PRO_KEY_PREFIX = 'XHS-PRO-';
-  const BUY_URL = 'https://mianbaoduo.com/xxxxx'; // ⚠️ TODO: 替换为面包多商品链接（创建商品后更新）
+  const BUY_URL = 'https://afdian.com/item/b4dab2045cf111f18bfd52540025c377'; // 爱发电商品
   const EDITOR_URLS = [
     'https://creator.xiaohongshu.com/publish/publish',
     'https://creator.xiaohongshu.com/note/editor',

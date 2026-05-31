@@ -401,7 +401,7 @@
       if (buyBtn) {
         buyBtn.addEventListener('click', () => {
           // 打开面包多支付链接（需要替换为真实链接）
-          window.open('https://mianbaoduo.com/xxxxx', '_blank');
+          window.open('https://afdian.com/item/b4dab2045cf111f18bfd52540025c377', '_blank');
         });
       }
 
