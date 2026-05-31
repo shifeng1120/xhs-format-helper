@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+
+# IDE
+.vscode/
+.idea/
+
+# Java (crx4chrome tools etc.)
+*.class
+
+# Temp
+*.tmp

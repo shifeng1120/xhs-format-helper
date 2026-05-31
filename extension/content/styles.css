@@ -1,0 +1,357 @@
+/* ============================================
+   小红书排版助手 - 工具栏样式
+   使用 all:initial + 高优先级选择器
+   防止被小红书页面样式污染
+   ============================================ */
+
+/* --- 工具栏容器 --- */
+#xhs-fmt-toolbar {
+  all: initial;
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+  padding: 8px 12px !important;
+  margin-bottom: 8px !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  position: relative !important;
+  z-index: 999999 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  box-sizing: border-box !important;
+  user-select: none !important;
+}
+
+/* --- 分隔线 --- */
+#xhs-fmt-toolbar .xhs-fmt-divider {
+  all: initial;
+  display: inline-block !important;
+  width: 1px !important;
+  height: 24px !important;
+  background: #e0e0e0 !important;
+  margin: 0 4px !important;
+}
+
+/* --- 按钮组标签 --- */
+#xhs-fmt-toolbar .xhs-fmt-label {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  color: #999 !important;
+  margin-right: 2px !important;
+  white-space: nowrap !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* --- 按钮基础样式 --- */
+#xhs-fmt-toolbar .xhs-fmt-btn {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  color: #333 !important;
+  transition: all 0.15s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  text-indent: 0 !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn:hover {
+  background: #f5f5f5 !important;
+  border-color: #e0e0e0 !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn:active {
+  background: #e8e8e8 !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn.active {
+  background: #e3f2fd !important;
+  border-color: #90caf9 !important;
+  color: #1976d2 !important;
+}
+
+/* --- 带文字的按钮（较大） --- */
+#xhs-fmt-toolbar .xhs-fmt-btn-text {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 32px !important;
+  padding: 0 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  color: #333 !important;
+  transition: all 0.15s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  text-indent: 0 !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn-text:hover {
+  background: #f5f5f5 !important;
+  border-color: #e0e0e0 !important;
+}
+
+/* --- 下拉选择器 --- */
+#xhs-fmt-toolbar select.xhs-fmt-select {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 32px !important;
+  padding: 0 24px 0 8px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 8px center !important;
+  font-size: 13px !important;
+  color: #333 !important;
+  cursor: pointer !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  min-width: 60px !important;
+}
+
+#xhs-fmt-toolbar select.xhs-fmt-select:hover {
+  border-color: #bdbdbd !important;
+}
+
+#xhs-fmt-toolbar select.xhs-fmt-select:focus {
+  outline: none !important;
+  border-color: #90caf9 !important;
+}
+
+/* --- 颜色选择器 --- */
+#xhs-fmt-toolbar .xhs-fmt-color-wrapper {
+  all: initial;
+  position: relative !important;
+  display: inline-flex !important;
+}
+
+#xhs-fmt-toolbar input[type="color"].xhs-fmt-color {
+  all: initial;
+  width: 32px !important;
+  height: 32px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  padding: 2px !important;
+  cursor: pointer !important;
+  background: #fff !important;
+  box-sizing: border-box !important;
+}
+
+#xhs-fmt-toolbar input[type="color"].xhs-fmt-color::-webkit-color-swatch-wrapper {
+  padding: 0 !important;
+}
+
+#xhs-fmt-toolbar input[type="color"].xhs-fmt-color::-webkit-color-swatch {
+  border: none !important;
+  border-radius: 3px !important;
+}
+
+/* --- 快捷预设色块 --- */
+#xhs-fmt-toolbar .xhs-fmt-preset-colors {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-preset-color {
+  all: initial;
+  display: inline-block !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  border: 2px solid transparent !important;
+  transition: transform 0.1s ease !important;
+  box-sizing: border-box !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-preset-color:hover {
+  transform: scale(1.2) !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-preset-color.active {
+  border-color: #333 !important;
+}
+
+/* --- Pro 锁定按钮 --- */
+#xhs-fmt-toolbar .xhs-fmt-btn-pro {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  position: relative !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn-pro::after {
+  content: "🔒" !important;
+  font-size: 8px !important;
+  position: absolute !important;
+  top: -2px !important;
+  right: -2px !important;
+}
+
+/* --- 拖拽手柄 --- */
+#xhs-fmt-toolbar .xhs-fmt-drag-handle {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  cursor: grab !important;
+  padding: 0 4px !important;
+  color: #ccc !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-drag-handle:active {
+  cursor: grabbing !important;
+}
+
+/* --- 工具栏对齐（浮动在编辑器上方的变体） --- */
+#xhs-fmt-toolbar.xhs-fmt-floating {
+  position: fixed !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 999999 !important;
+  animation: xhs-fmt-fadeIn 0.2s ease !important;
+}
+
+@keyframes xhs-fmt-fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Pro 升级弹窗 --- */
+#xhs-fmt-pro-modal-overlay {
+  all: initial;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0,0,0,0.4) !important;
+  z-index: 1000000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#xhs-fmt-pro-modal {
+  all: initial;
+  background: #fff !important;
+  border-radius: 16px !important;
+  padding: 32px !important;
+  max-width: 400px !important;
+  width: 90% !important;
+  text-align: center !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16) !important;
+  display: block !important;
+}
+
+#xhs-fmt-pro-modal h2 {
+  all: initial;
+  display: block !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #333 !important;
+  margin-bottom: 12px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#xhs-fmt-pro-modal p {
+  all: initial;
+  display: block !important;
+  font-size: 14px !important;
+  color: #666 !important;
+  line-height: 1.6 !important;
+  margin-bottom: 20px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#xhs-fmt-pro-modal .xhs-fmt-price {
+  all: initial;
+  display: block !important;
+  font-size: 36px !important;
+  font-weight: 800 !important;
+  color: #1976d2 !important;
+  margin-bottom: 24px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#xhs-fmt-pro-modal .xhs-fmt-price small {
+  all: initial;
+  display: inline !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+  color: #999 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#xhs-fmt-pro-modal .xhs-fmt-pro-btn-buy {
+  all: initial;
+  display: inline-block !important;
+  padding: 12px 32px !important;
+  background: #1976d2 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#xhs-fmt-pro-modal .xhs-fmt-pro-btn-buy:hover {
+  background: #1565c0 !important;
+}
+
+#xhs-fmt-pro-modal .xhs-fmt-pro-btn-close {
+  all: initial;
+  display: inline-block !important;
+  margin-top: 12px !important;
+  padding: 8px 20px !important;
+  background: transparent !important;
+  color: #999 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  border: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+#xhs-fmt-pro-modal .xhs-fmt-pro-btn-close:hover {
+  background: #f5f5f5 !important;
+  color: #666 !important;
+}

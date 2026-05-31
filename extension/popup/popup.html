@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>小红书排版助手</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #ffffff;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .header {
+      padding: 16px;
+      background: linear-gradient(135deg, #1976d2, #1565c0);
+      color: #fff;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    .section {
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      color: #666;
+    }
+
+    .info-value {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-free {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .badge-pro {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #1565c0;
+    }
+
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #666;
+    }
+
+    .btn-secondary:hover {
+      background: #e8e8e8;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #e0e0e0;
+      color: #666;
+    }
+
+    .btn-outline:hover {
+      border-color: #1976d2;
+      color: #1976d2;
+    }
+
+    .pro-section {
+      background: #fff8e1;
+      border: 1px solid #ffe0b2;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .pro-section h3 {
+      font-size: 16px;
+      margin-bottom: 6px;
+      color: #e65100;
+    }
+
+    .pro-section p {
+      font-size: 12px;
+      color: #8d6e63;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .price {
+      font-size: 28px;
+      font-weight: 800;
+      color: #e65100;
+      margin-bottom: 12px;
+    }
+
+    .price small {
+      font-size: 14px;
+      font-weight: 400;
+      color: #999;
+    }
+
+    .features {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 12px;
+      text-align: left;
+    }
+
+    .features li {
+      padding: 4px 0;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .features li::before {
+      content: "✓ ";
+      color: #4caf50;
+      font-weight: bold;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 4px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: monospace;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: #1976d2;
+    }
+
+    .success-msg {
+      color: #2e7d32;
+      font-size: 13px;
+      text-align: center;
+      padding: 8px;
+      background: #e8f5e9;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .error-msg {
+      color: #c62828;
+      font-size: 13px;
+      text-align: center;
+      padding: 8px;
+      background: #ffebee;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .footer {
+      padding: 12px 16px;
+      border-top: 1px solid #f0f0f0;
+      text-align: center;
+      font-size: 11px;
+      color: #bbb;
+    }
+
+    .footer a {
+      color: #999;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      color: #1976d2;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .link {
+      color: #1976d2;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📝 小红书排版助手</h1>
+    <p>美化你的每一篇笔记</p>
+  </div>
+
+  <div class="content">
+    <!-- 状态 -->
+    <div class="section">
+      <div class="info-row">
+        <span class="info-label">当前状态</span>
+        <span id="status-badge" class="badge badge-free">Free 版</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">排版使用次数</span>
+        <span id="format-count" class="info-value">0</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">版本</span>
+        <span id="version" class="info-value">1.0.0</span>
+      </div>
+    </div>
+
+    <!-- Pro 信息（已激活） -->
+    <div id="pro-activated-section" class="hidden">
+      <div class="pro-section" style="background:#e8f5e9;border-color:#c8e6c9;">
+        <h3 style="color:#2e7d32;">✅ Pro 已激活</h3>
+        <p>感谢你的支持！所有高级功能已解锁</p>
+        <div class="features">
+          <li>5 套专业排版模板</li>
+          <li>10 套配色方案</li>
+          <li>格式清理工具</li>
+          <li>自定义模板保存</li>
+          <li>话题标签管理</li>
+        </div>
+        <button id="btn-deactivate-pro" class="btn btn-secondary">退出 Pro</button>
+      </div>
+    </div>
+
+    <!-- Pro 升级（未激活） -->
+    <div id="pro-upgrade-section">
+      <div class="pro-section">
+        <h3>⭐ 升级到 Pro</h3>
+        <p>解锁全部高级功能，让每篇笔记都颜值在线</p>
+        <div class="price">¥29.9 <small>终身买断</small></div>
+        <ul class="features">
+          <li>5 套专业排版模板，一键套用</li>
+          <li>10 套配色方案，选中即用</li>
+          <li>格式清理，一键统一全文</li>
+          <li>自定义模板，保存你的专属风格</li>
+          <li>话题标签管理，快捷插入</li>
+        </ul>
+        <button id="btn-buy-pro" class="btn btn-primary">立即购买</button>
+        <div style="margin-top: 12px;">
+          <span class="link" id="btn-show-activate">已有激活码？点击输入</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 激活码输入（默认隐藏） -->
+    <div id="activate-section" class="hidden">
+      <div class="input-group">
+        <label for="license-input">输入激活码</label>
+        <input type="text" id="license-input" placeholder="XHS-PRO-XXXX-XXXX-XX" autocomplete="off">
+      </div>
+      <button id="btn-activate" class="btn btn-primary" style="margin-bottom:8px;">激活 Pro</button>
+      <button id="btn-cancel-activate" class="btn btn-outline">取消</button>
+    </div>
+
+    <div id="activate-result" class="hidden"></div>
+
+    <!-- 快捷操作 -->
+    <div class="section" style="margin-top: 8px;">
+      <div class="section-title">快捷操作</div>
+      <button id="btn-open-editor" class="btn btn-outline" style="margin-bottom:6px;">📝 打开小红书编辑器</button>
+      <button id="btn-contact" class="btn btn-outline">💬 反馈问题</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    Made with ❤️ | <a href="#" id="link-privacy">隐私政策</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
