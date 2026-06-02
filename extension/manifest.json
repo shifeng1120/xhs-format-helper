@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "小红书排版助手 - 美化笔记排版工具",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "一键美化你的小红书笔记排版！调字号、行距、颜色、配色方案、排版模板，让每篇笔记都颜值在线。",
   "permissions": [
     "storage"

@@ -1,7 +1,5 @@
 /* ============================================
-   小红书排版助手 - 工具栏样式
-   使用 all:initial + 高优先级选择器
-   防止被小红书页面样式污染
+   小红书排版助手 - 工具栏样式 v1.1.0
    ============================================ */
 
 /* --- 工具栏容器 --- */
@@ -118,6 +116,19 @@
 #xhs-fmt-toolbar .xhs-fmt-btn-text:hover {
   background: #f5f5f5 !important;
   border-color: #e0e0e0 !important;
+}
+
+/* --- 升级按钮（特殊颜色） --- */
+#xhs-fmt-toolbar .xhs-fmt-btn-upgrade {
+  background: #fff3e0 !important;
+  color: #e65100 !important;
+  font-weight: 600 !important;
+  border-color: #ffe0b2 !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn-upgrade:hover {
+  background: #ffe0b2 !important;
+  border-color: #ffb74d !important;
 }
 
 /* --- 下拉选择器 --- */
@@ -238,18 +249,243 @@
   cursor: grabbing !important;
 }
 
-/* --- 工具栏对齐（浮动在编辑器上方的变体） --- */
-#xhs-fmt-toolbar.xhs-fmt-floating {
-  position: fixed !important;
-  top: auto !important;
-  left: auto !important;
-  z-index: 999999 !important;
-  animation: xhs-fmt-fadeIn 0.2s ease !important;
+/* =============================================
+   功能面板（模板选择器 / 配色 / 标签）
+   ============================================= */
+
+.xhs-fmt-panel {
+  all: initial;
+  display: block !important;
+  background: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12) !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  padding: 0 !important;
+  max-width: 480px !important;
+  width: 100% !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  z-index: 1000000 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
-@keyframes xhs-fmt-fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+.xhs-fmt-panel-header {
+  all: initial;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-panel-close {
+  cursor: pointer !important;
+  font-size: 18px !important;
+  color: #999 !important;
+  padding: 0 4px !important;
+}
+
+.xhs-fmt-panel-close:hover {
+  color: #333 !important;
+}
+
+/* --- 模板卡片网格 --- */
+.xhs-fmt-panel-grid {
+  all: initial;
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+  gap: 10px !important;
+  padding: 14px !important;
+}
+
+.xhs-fmt-template-card {
+  all: initial;
+  display: block !important;
+  background: #fafafa !important;
+  border: 1px solid #eee !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+.xhs-fmt-template-card:hover {
+  border-color: #90caf9 !important;
+  box-shadow: 0 2px 8px rgba(25,118,210,0.12) !important;
+  transform: translateY(-1px) !important;
+}
+
+.xhs-fmt-template-preview {
+  all: initial;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+  min-height: 50px !important;
+  justify-content: center !important;
+}
+
+.xhs-fmt-template-emoji {
+  font-size: 24px !important;
+  line-height: 1 !important;
+}
+
+.xhs-fmt-template-sample {
+  all: initial;
+  font-size: 13px !important;
+  opacity: 0.7 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-template-name {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  margin-bottom: 2px !important;
+}
+
+.xhs-fmt-template-desc {
+  font-size: 11px !important;
+  color: #999 !important;
+  line-height: 1.3 !important;
+}
+
+/* --- 配色方案卡片 --- */
+.xhs-fmt-scheme-grid {
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)) !important;
+}
+
+.xhs-fmt-scheme-card {
+  all: initial;
+  display: block !important;
+  border: 1px solid #eee !important;
+  border-radius: 8px !important;
+  padding: 10px !important;
+  cursor: pointer !important;
+  text-align: center !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+}
+
+.xhs-fmt-scheme-card:hover {
+  border-color: #90caf9 !important;
+  box-shadow: 0 2px 8px rgba(25,118,210,0.12) !important;
+  transform: translateY(-1px) !important;
+}
+
+.xhs-fmt-scheme-preview {
+  all: initial;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 12px !important;
+  border-radius: 6px !important;
+  margin-bottom: 6px !important;
+}
+
+.xhs-fmt-scheme-dot {
+  all: initial;
+  display: inline-block !important;
+  width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(0,0,0,0.1) !important;
+}
+
+/* --- 话题标签 --- */
+.xhs-fmt-hashtag-container {
+  all: initial;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  padding: 14px !important;
+}
+
+.xhs-fmt-hashtag {
+  all: initial;
+  display: inline-block !important;
+  background: #f5f5f5 !important;
+  color: #1976d2 !important;
+  padding: 6px 14px !important;
+  border-radius: 20px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  border: 1px solid #e0e0e0 !important;
+  transition: all 0.15s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  line-height: 1 !important;
+}
+
+.xhs-fmt-hashtag:hover {
+  background: #e3f2fd !important;
+  border-color: #90caf9 !important;
+}
+
+.xhs-fmt-custom-tag-input {
+  flex: 1 !important;
+  padding: 8px 12px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  outline: none !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  box-sizing: border-box !important;
+}
+
+.xhs-fmt-custom-tag-input:focus {
+  border-color: #1976d2 !important;
+}
+
+.xhs-fmt-custom-tag-btn {
+  padding: 8px 16px !important;
+  background: #1976d2 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  flex-shrink: 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-custom-tag-btn:hover {
+  background: #1565c0 !important;
+}
+
+/* --- Tooltip --- */
+.xhs-fmt-tooltip {
+  all: initial;
+  position: fixed !important;
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: #323232 !important;
+  color: #fff !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  z-index: 1000001 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  transition: opacity 0.3s ease !important;
+  opacity: 1 !important;
+  max-width: 80% !important;
+  text-align: center !important;
+}
+
+.xhs-fmt-tooltip-fade {
+  opacity: 0 !important;
 }
 
 /* --- Pro 升级弹窗 --- */

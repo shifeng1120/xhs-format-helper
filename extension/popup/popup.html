@@ -7,7 +7,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      width: 320px;
+      width: 340px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: #ffffff;
       color: #333;
@@ -88,6 +88,16 @@
       color: #e65100;
     }
 
+    .badge-trial {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .badge-expired {
+      background: #ffebee;
+      color: #c62828;
+    }
+
     .btn {
       display: block;
       width: 100%;
@@ -128,6 +138,15 @@
     .btn-outline:hover {
       border-color: #1976d2;
       color: #1976d2;
+    }
+
+    .btn-success {
+      background: #2e7d32;
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background: #1b5e20;
     }
 
     .pro-section {
@@ -247,7 +266,7 @@
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     .link {
@@ -258,6 +277,100 @@
 
     .link:hover {
       text-decoration: underline;
+    }
+
+    /* --- 试用期倒计时横幅 --- */
+    .trial-banner {
+      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+      border: 1px solid #a5d6a7;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .trial-banner-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .trial-banner-text {
+      flex: 1;
+    }
+
+    .trial-banner-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+
+    .trial-banner-desc {
+      font-size: 12px;
+      color: #558b2f;
+      margin-top: 2px;
+    }
+
+    .trial-banner-countdown {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1b5e20;
+      background: rgba(255,255,255,0.6);
+      padding: 4px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    /* --- 试用过期横幅 --- */
+    .expired-banner {
+      background: linear-gradient(135deg, #ffebee, #ffcdd2);
+      border: 1px solid #ef9a9a;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .expired-banner-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #c62828;
+    }
+
+    .expired-banner-desc {
+      font-size: 12px;
+      color: #e53935;
+      margin-top: 4px;
+    }
+
+    /* --- 独立的激活码入口（更显眼） --- */
+    .activate-entry {
+      border: 1px dashed #90caf9;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      text-align: center;
+      background: #f5faff;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .activate-entry:hover {
+      border-color: #1976d2;
+      background: #e3f2fd;
+    }
+
+    .activate-entry-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1976d2;
+    }
+
+    .activate-entry-hint {
+      font-size: 11px;
+      color: #90caf9;
+      margin-top: 2px;
     }
   </style>
 </head>
@@ -274,17 +387,37 @@
         <span class="info-label">当前状态</span>
         <span id="status-badge" class="badge badge-free">Free 版</span>
       </div>
+      <div id="trial-info-row" class="info-row hidden">
+        <span class="info-label">试用剩余</span>
+        <span id="trial-remaining" class="info-value">3 天</span>
+      </div>
       <div class="info-row">
         <span class="info-label">排版使用次数</span>
         <span id="format-count" class="info-value">0</span>
       </div>
       <div class="info-row">
         <span class="info-label">版本</span>
-        <span id="version" class="info-value">1.0.0</span>
+        <span id="version" class="info-value">1.1.0</span>
       </div>
     </div>
 
-    <!-- Pro 信息（已激活） -->
+    <!-- 试用期横幅（试用期内显示） -->
+    <div id="trial-banner" class="trial-banner hidden">
+      <div class="trial-banner-icon">🎁</div>
+      <div class="trial-banner-text">
+        <div class="trial-banner-title">🔥 全功能试用中</div>
+        <div class="trial-banner-desc">所有 Pro 功能已解锁，到期后自动降级</div>
+      </div>
+      <div class="trial-banner-countdown" id="trial-countdown">3 天</div>
+    </div>
+
+    <!-- 试用过期横幅 -->
+    <div id="expired-banner" class="expired-banner hidden">
+      <div class="expired-banner-title">⏰ 试用已结束</div>
+      <div class="expired-banner-desc">升级 Pro 终身版，继续使用全部高级功能</div>
+    </div>
+
+    <!-- Pro 已激活 -->
     <div id="pro-activated-section" class="hidden">
       <div class="pro-section" style="background:#e8f5e9;border-color:#c8e6c9;">
         <h3 style="color:#2e7d32;">✅ Pro 已激活</h3>
@@ -300,12 +433,12 @@
       </div>
     </div>
 
-    <!-- Pro 升级（未激活） -->
+    <!-- Pro 升级（免费版 + 试用过期） -->
     <div id="pro-upgrade-section">
       <div class="pro-section">
-        <h3>⭐ 升级到 Pro</h3>
+        <h3>⭐ 升级到 Pro 终身版</h3>
         <p>解锁全部高级功能，让每篇笔记都颜值在线</p>
-        <div class="price">¥29.9 <small>终身买断</small></div>
+        <div class="price">¥29.9 <small>一次付费，永久使用</small></div>
         <ul class="features">
           <li>5 套专业排版模板，一键套用</li>
           <li>10 套配色方案，选中即用</li>
@@ -314,10 +447,13 @@
           <li>话题标签管理，快捷插入</li>
         </ul>
         <button id="btn-buy-pro" class="btn btn-primary">立即购买</button>
-        <div style="margin-top: 12px;">
-          <span class="link" id="btn-show-activate">已有激活码？点击输入</span>
-        </div>
       </div>
+    </div>
+
+    <!-- 已有激活码？入口（独立模块，更显眼） -->
+    <div class="activate-entry" id="btn-show-activate">
+      <div class="activate-entry-text">🔑 已有激活码？点击激活</div>
+      <div class="activate-entry-hint">如果你已经购买了 Pro，在这里输入激活码</div>
     </div>
 
     <!-- 激活码输入（默认隐藏） -->

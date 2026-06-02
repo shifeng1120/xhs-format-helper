@@ -1,6 +1,5 @@
 // ============================================
-// 小红书排版助手 - 内容注入脚本
-// 功能：注入浮动排版工具栏到小红书编辑器
+// 小红书排版助手 - 内容注入脚本 v1.1.0
 // ============================================
 
 (function () {
@@ -19,13 +18,14 @@
   // ---------- 状态 ----------
   let state = {
     isPro: false,
+    proSource: 'none', // 'activation' | 'trial' | 'expired' | 'none'
     toolbarInjected: false,
     currentSelection: null,
+    activePanel: null, // 当前打开的面板
   };
 
   // ---------- 工具函数 ----------
 
-  /** 加载 Chrome 存储 */
   async function loadStorage(key) {
     return new Promise((resolve) => {
       if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -36,7 +36,6 @@
     });
   }
 
-  /** 保存到 Chrome 存储 */
   async function saveStorage(key, value) {
     return new Promise((resolve) => {
       if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -48,13 +47,11 @@
     });
   }
 
-  /** 检查 Pro 许可证是否有效 */
   function isValidProKey(key) {
     if (!key || typeof key !== 'string') return false;
     return key.startsWith(CONFIG.PRO_KEY_PREFIX) && key.length >= 16;
   }
 
-  /** 防抖 */
   function debounce(fn, ms) {
     let timer;
     return function (...args) {
@@ -63,27 +60,34 @@
     };
   }
 
-  // ---------- 初始化 Pro 状态 ----------
+  /** 生成唯一 ID */
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  // ---------- Pro / 试用状态 ----------
 
   async function initProStatus() {
-    const savedKey = await loadStorage(CONFIG.PRO_KEY);
-    state.isPro = isValidProKey(savedKey);
-    return state.isPro;
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage({ action: 'isPro' }, (result) => {
+        if (result) {
+          state.isPro = result.isPro;
+          state.proSource = result.source || 'none';
+        }
+        resolve(state.isPro);
+      });
+    });
   }
 
   // ---------- 检测编辑器 DOM ----------
 
-  /** 查找小红书编辑器中的 contenteditable 区域 */
   function findEditor() {
-    // 小红书 PC 端编辑器通常是 contenteditable 的 div
     const editors = document.querySelectorAll('[contenteditable="true"]');
     for (const el of editors) {
-      // 找到最可能是笔记编辑器的那个（面积最大或含有特定类名）
       if (el.offsetWidth > 200 && el.offsetHeight > 100) {
         return el;
       }
     }
-    // 兜底：通过选区判断
     const sel = window.getSelection();
     if (sel && sel.rangeCount > 0) {
       const node = sel.getRangeAt(0).commonAncestorContainer;
@@ -91,17 +95,6 @@
       if (editable) return editable;
     }
     return null;
-  }
-
-  /** 查找编辑器上方适合插入工具栏的位置 */
-  function findToolbarAnchor(editor) {
-    // 1. 看编辑器父容器是否有 header/toolbar 区域
-    const parent = editor.parentElement;
-    if (parent) {
-      // 2. 在编辑器前面插入
-      return editor;
-    }
-    return editor;
   }
 
   // ---------- 注入工具栏 ----------
@@ -114,7 +107,6 @@
     const toolbar = createToolbarElement();
     if (!toolbar) return;
 
-    // 插入到编辑器前面
     editor.parentNode.insertBefore(toolbar, editor);
     state.toolbarInjected = true;
     console.log('[小红书排版助手] 工具栏已注入');
@@ -122,7 +114,6 @@
 
   /** 创建工具栏 DOM */
   function createToolbarElement() {
-    // 避免重复创建
     if (document.getElementById(CONFIG.TOOLBAR_ID)) return null;
 
     const toolbar = document.createElement('div');
@@ -130,24 +121,22 @@
 
     // ---- 字号 ----
     toolbar.appendChild(createLabel('字号'));
-    const fontSizeSelect = createSelect(
+    toolbar.appendChild(createSelect(
       ['14', '15', '16', '17', '18', '20', '22', '24'],
       ['14', '15', '16', '17', '18', '20', '22', '24'],
       '16',
       (val) => execFormat('fontSize', val)
-    );
-    toolbar.appendChild(fontSizeSelect);
+    ));
     toolbar.appendChild(createDivider());
 
     // ---- 行距 ----
     toolbar.appendChild(createLabel('行距'));
-    const lineHeightSelect = createSelect(
+    toolbar.appendChild(createSelect(
       ['1.0', '1.5', '1.75', '2.0', '2.5'],
       ['1.0', '1.5', '1.75', '2.0', '2.5'],
       '1.75',
       (val) => applyLineHeight(val)
-    );
-    toolbar.appendChild(lineHeightSelect);
+    ));
     toolbar.appendChild(createDivider());
 
     // ---- 颜色 ----
@@ -176,19 +165,27 @@
     toolbar.appendChild(createBtn('→', '增加缩进', () => execFormat('indent')));
     toolbar.appendChild(createDivider());
 
-    // ---- Pro 功能（锁定） ----
-    const proClass = state.isPro ? '' : ' xhs-fmt-btn-pro';
-    toolbar.appendChild(createBtnText('📋 模板', () => showProModal(), true));
-    toolbar.appendChild(createBtnText('🎨 配色', () => showProModal(), true));
-    toolbar.appendChild(createBtnText('🧹 清理', () => showProModal(), true));
+    // ---- Pro 功能（试用/Pro 可解锁） ----
+    if (state.isPro) {
+      // 完全解锁：直接使用功能
+      toolbar.appendChild(createBtnText('📋 模板', () => openTemplatePanel()));
+      toolbar.appendChild(createBtnText('🎨 配色', () => openColorSchemePanel()));
+      toolbar.appendChild(createBtnText('🧹 清理', () => runFormatCleaner()));
+      toolbar.appendChild(createBtnText('🏷️ 标签', () => openHashtagPanel()));
+    } else if (state.proSource === 'expired') {
+      // 试用过期：全部锁定，点购买
+      toolbar.appendChild(createLockedBtn('📋 模板', '试用已过期'));
+      toolbar.appendChild(createLockedBtn('🎨 配色', '试用已过期'));
+      toolbar.appendChild(createLockedBtn('🧹 清理', '试用已过期'));
+      toolbar.appendChild(createLockedBtn('🏷️ 标签', '试用已过期'));
+    }
 
-    // ---- 升级入口 ----
-    if (!state.isPro) {
+    // ---- 升级入口（非激活用户显示） ----
+    if (state.proSource !== 'activation') {
       toolbar.appendChild(createDivider());
       const upgradeBtn = document.createElement('button');
-      upgradeBtn.className = 'xhs-fmt-btn-text';
-      upgradeBtn.style.cssText = 'background:#1976d2 !important;color:#fff !important;border-radius:6px !important;font-weight:600 !important;';
-      upgradeBtn.textContent = '⭐ 升级Pro';
+      upgradeBtn.className = 'xhs-fmt-btn-text xhs-fmt-btn-upgrade';
+      upgradeBtn.textContent = state.proSource === 'trial' ? '⭐ 试用中·升级永久' : '⭐ 升级Pro';
       upgradeBtn.title = '解锁全部高级功能';
       upgradeBtn.addEventListener('click', showProModal);
       toolbar.appendChild(upgradeBtn);
@@ -233,15 +230,29 @@
     return btn;
   }
 
-  function createBtnText(text, onClick, isPro = false) {
+  function createBtnText(text, onClick) {
     const btn = document.createElement('button');
-    btn.className = 'xhs-fmt-btn-text' + (isPro && !state.isPro ? ' xhs-fmt-btn-pro' : '');
+    btn.className = 'xhs-fmt-btn-text';
     btn.textContent = text;
     btn.title = text;
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       onClick();
+    });
+    return btn;
+  }
+
+  /** 锁定按钮（已过期） */
+  function createLockedBtn(text, reason) {
+    const btn = document.createElement('button');
+    btn.className = 'xhs-fmt-btn-text xhs-fmt-btn-pro';
+    btn.textContent = text;
+    btn.title = reason;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showProModal();
     });
     return btn;
   }
@@ -293,7 +304,6 @@
         e.preventDefault();
         e.stopPropagation();
         execFormat(command, color);
-        // 移除其他 active
         wrapper.querySelectorAll('.xhs-fmt-preset-color').forEach((d) => d.classList.remove('active'));
         dot.classList.add('active');
       });
@@ -304,15 +314,11 @@
 
   // ---------- 排版命令执行 ----------
 
-  /** 执行 document.execCommand */
   function execFormat(command, value) {
     const editor = findEditor();
     if (!editor) return;
 
-    // 确保编辑器获得焦点
     editor.focus();
-
-    // 保存选区
     const sel = window.getSelection();
     if (!sel || sel.rangeCount === 0) return;
 
@@ -326,11 +332,9 @@
       console.warn('[小红书排版助手] execCommand 失败:', command, e);
     }
 
-    // 重新聚焦编辑器
     editor.focus();
   }
 
-  /** 应用行距 */
   function applyLineHeight(value) {
     const editor = findEditor();
     if (!editor) return;
@@ -342,12 +346,10 @@
     const range = sel.getRangeAt(0);
     let container = range.commonAncestorContainer;
 
-    // 如果选区没有包裹元素，创建一个
     if (container.nodeType === Node.TEXT_NODE) {
       container = container.parentElement;
     }
 
-    // 应用行高到最近的块级元素
     let block = container;
     while (block && block !== editor) {
       const display = window.getComputedStyle(block).display;
@@ -358,7 +360,6 @@
       block = block.parentElement;
     }
 
-    // 兜底：直接设置到选区包裹元素
     try {
       document.execCommand('insertHTML', false, `<span style="line-height:${value}">${range.toString()}</span>`);
     } catch (e) {
@@ -368,24 +369,329 @@
     editor.focus();
   }
 
-  // ---------- Pro 弹窗 ----------
+  // =============================================
+  // Pro 功能实现
+  // =============================================
+
+  // ---------- 模板选择面板 ----------
+
+  const TEMPLATES = [
+    { id: 'clean', name: '清新简约', emoji: '🌿', desc: '干净利落，适合日常分享', style: { fontSize: '16px', lineHeight: '1.75', color: '#333333', textAlign: 'left' } },
+    { id: 'business', name: '干练商务', emoji: '💼', desc: '专业正式，适合职场分享', style: { fontSize: '15px', lineHeight: '1.5', color: '#222222', textAlign: 'left' } },
+    { id: 'cute', name: '可爱清新', emoji: '🌸', desc: '甜美可爱，适合美妆穿搭', style: { fontSize: '16px', lineHeight: '2.0', color: '#555555', textAlign: 'center' } },
+    { id: 'minimal', name: '极简留白', emoji: '◻️', desc: '大量留白，适合摄影感悟', style: { fontSize: '17px', lineHeight: '2.5', color: '#444444', textAlign: 'left' } },
+    { id: 'vintage', name: '复古文艺', emoji: '📜', desc: '复古色调，适合书评影评', style: { fontSize: '16px', lineHeight: '1.8', color: '#5D4037', textAlign: 'left' } },
+  ];
+
+  function openTemplatePanel() {
+    closeActivePanel();
+    const editor = findEditor();
+    if (!editor) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'xhs-fmt-panel';
+    panel.id = 'xhs-fmt-panel-' + uid();
+
+    // 标题
+    const header = document.createElement('div');
+    header.className = 'xhs-fmt-panel-header';
+    header.innerHTML = '<span>📋 选择排版模板</span><span class="xhs-fmt-panel-close">✕</span>';
+    header.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
+    panel.appendChild(header);
+
+    // 模板卡片
+    const grid = document.createElement('div');
+    grid.className = 'xhs-fmt-panel-grid';
+
+    TEMPLATES.forEach((tpl) => {
+      const card = document.createElement('div');
+      card.className = 'xhs-fmt-template-card';
+      card.innerHTML = `
+        <div class="xhs-fmt-template-preview" style="font-size:${tpl.style.fontSize}; line-height:${tpl.style.lineHeight}; color:${tpl.style.color}; text-align:${tpl.style.textAlign};">
+          <span class="xhs-fmt-template-emoji">${tpl.emoji}</span>
+          <div class="xhs-fmt-template-sample" style="font-size:${tpl.style.fontSize}; color:${tpl.style.color};">
+            排版预览
+          </div>
+        </div>
+        <div class="xhs-fmt-template-name">${tpl.name}</div>
+        <div class="xhs-fmt-template-desc">${tpl.desc}</div>
+      `;
+      card.addEventListener('click', () => {
+        applyTemplateToEditor(tpl, editor);
+        panel.remove();
+      });
+      grid.appendChild(card);
+    });
+
+    panel.appendChild(grid);
+    editor.parentNode.insertBefore(panel, editor.nextSibling);
+    state.activePanel = panel;
+  }
+
+  function applyTemplateToEditor(tpl, editor) {
+    const paragraphs = editor.querySelectorAll('p, div[style*="margin"], [data-block]');
+    if (paragraphs.length === 0) {
+      editor.style.fontSize = tpl.style.fontSize;
+      editor.style.lineHeight = tpl.style.lineHeight;
+      editor.style.color = tpl.style.color;
+      editor.style.textAlign = tpl.style.textAlign;
+    } else {
+      paragraphs.forEach((p) => {
+        p.style.fontSize = tpl.style.fontSize;
+        p.style.lineHeight = tpl.style.lineHeight;
+        p.style.color = tpl.style.color;
+        p.style.textAlign = tpl.style.textAlign;
+      });
+    }
+  }
+
+  // ---------- 配色方案面板 ----------
+
+  const COLOR_SCHEMES = [
+    { id: 'default', name: '经典黑白', primary: '#333333', accent: '#1976D2', bg: '#FFFFFF' },
+    { id: 'rose', name: '玫瑰红茶', primary: '#5D4037', accent: '#E91E63', bg: '#FFF8F0' },
+    { id: 'ocean', name: '深海蓝调', primary: '#1A237E', accent: '#00BCD4', bg: '#E8EAF6' },
+    { id: 'forest', name: '森林物语', primary: '#1B5E20', accent: '#FF9800', bg: '#F1F8E9' },
+    { id: 'sunset', name: '日落余晖', primary: '#E65100', accent: '#FFD54F', bg: '#FFF3E0' },
+    { id: 'lavender', name: '薰衣草田', primary: '#4A148C', accent: '#CE93D8', bg: '#F3E5F5' },
+    { id: 'matcha', name: '抹茶拿铁', primary: '#33691E', accent: '#FFAB91', bg: '#F1F8E9' },
+    { id: 'chocolate', name: '巧克力慕斯', primary: '#3E2723', accent: '#FFB300', bg: '#FFF8E1' },
+    { id: 'sky', name: '天空之城', primary: '#01579B', accent: '#FF4081', bg: '#E1F5FE' },
+    { id: 'mono', name: '高级灰调', primary: '#212121', accent: '#9E9E9E', bg: '#F5F5F5' },
+  ];
+
+  function openColorSchemePanel() {
+    closeActivePanel();
+    const editor = findEditor();
+    if (!editor) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'xhs-fmt-panel';
+    panel.id = 'xhs-fmt-panel-' + uid();
+
+    const header = document.createElement('div');
+    header.className = 'xhs-fmt-panel-header';
+    header.innerHTML = '<span>🎨 选择配色方案</span><span class="xhs-fmt-panel-close">✕</span>';
+    header.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
+    panel.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'xhs-fmt-panel-grid xhs-fmt-scheme-grid';
+
+    COLOR_SCHEMES.forEach((scheme) => {
+      const card = document.createElement('div');
+      card.className = 'xhs-fmt-scheme-card';
+      card.innerHTML = `
+        <div class="xhs-fmt-scheme-preview" style="background:${scheme.bg};">
+          <span class="xhs-fmt-scheme-dot" style="background:${scheme.primary};"></span>
+          <span class="xhs-fmt-scheme-dot" style="background:${scheme.accent};"></span>
+        </div>
+        <div class="xhs-fmt-template-name">${scheme.name}</div>
+      `;
+      card.addEventListener('click', () => {
+        applyColorSchemeToEditor(scheme, editor);
+        panel.remove();
+      });
+      grid.appendChild(card);
+    });
+
+    panel.appendChild(grid);
+    editor.parentNode.insertBefore(panel, editor.nextSibling);
+    state.activePanel = panel;
+  }
+
+  function applyColorSchemeToEditor(scheme, editor) {
+    editor.focus();
+    document.execCommand('foreColor', false, scheme.primary);
+    editor.focus();
+  }
+
+  // ---------- 格式清理 ----------
+
+  function runFormatCleaner() {
+    const editor = findEditor();
+    if (!editor) return;
+
+    // 收集掉所有 inline 样式，清理到统一格式
+    const allElements = editor.querySelectorAll('*');
+    allElements.forEach((el) => {
+      // 清除所有内联样式
+      el.removeAttribute('style');
+      // 清除字体标签
+      if (el.tagName === 'FONT') {
+        const parent = el.parentNode;
+        while (el.firstChild) {
+          parent.insertBefore(el.firstChild, el);
+        }
+        parent.removeChild(el);
+      }
+    });
+
+    // 重置编辑器基础样式
+    editor.style.cssText = '';
+    editor.style.fontSize = '16px';
+    editor.style.lineHeight = '1.75';
+    editor.style.color = '#333333';
+
+    // 显示成功提示
+    showTooltip('🧹 格式已清理，排版已统一');
+  }
+
+  // ---------- 话题标签管理 ----------
+
+  const COMMON_HASHTAGS = [
+    '#日常分享', '#生活记录', '#好物推荐', '#穿搭分享',
+    '#美妆教程', '#旅行攻略', '#美食探店', '#读书笔记',
+    '#职场干货', '#学习打卡', '#健身打卡', '#Vlog日常',
+    '#plog', '#OOTD', '#开箱测评', '#探店分享',
+  ];
+
+  function openHashtagPanel() {
+    closeActivePanel();
+    const editor = findEditor();
+    if (!editor) return;
+
+    const panel = document.createElement('div');
+    panel.className = 'xhs-fmt-panel';
+    panel.id = 'xhs-fmt-panel-' + uid();
+
+    const header = document.createElement('div');
+    header.className = 'xhs-fmt-panel-header';
+    header.innerHTML = '<span>🏷️ 插入话题标签</span><span class="xhs-fmt-panel-close">✕</span>';
+    header.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
+    panel.appendChild(header);
+
+    const tagContainer = document.createElement('div');
+    tagContainer.className = 'xhs-fmt-hashtag-container';
+
+    COMMON_HASHTAGS.forEach((tag) => {
+      const tagEl = document.createElement('span');
+      tagEl.className = 'xhs-fmt-hashtag';
+      tagEl.textContent = tag;
+      tagEl.addEventListener('click', () => {
+        insertTextAtCursor(tag + ' ');
+        panel.remove();
+      });
+      tagContainer.appendChild(tagEl);
+    });
+
+    panel.appendChild(tagContainer);
+
+    // 自定义标签
+    const customRow = document.createElement('div');
+    customRow.style.cssText = 'margin-top: 12px; display: flex; gap: 8px;';
+    const customInput = document.createElement('input');
+    customInput.type = 'text';
+    customInput.placeholder = '自定义标签...';
+    customInput.className = 'xhs-fmt-custom-tag-input';
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '插入';
+    addBtn.className = 'xhs-fmt-custom-tag-btn';
+    addBtn.addEventListener('click', () => {
+      const val = customInput.value.trim();
+      if (val) {
+        insertTextAtCursor('#' + val + ' ');
+        panel.remove();
+      }
+    });
+    customInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addBtn.click();
+      }
+    });
+    customRow.appendChild(customInput);
+    customRow.appendChild(addBtn);
+    panel.appendChild(customRow);
+
+    editor.parentNode.insertBefore(panel, editor.nextSibling);
+    state.activePanel = panel;
+    customInput.focus();
+  }
+
+  function insertTextAtCursor(text) {
+    const editor = findEditor();
+    if (!editor) return;
+    editor.focus();
+
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) {
+      // 没有选区，直接追加到编辑器末尾
+      editor.appendChild(document.createTextNode(text));
+      return;
+    }
+
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text));
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  // ---------- 面板管理 ----------
+
+  function closeActivePanel() {
+    if (state.activePanel && state.activePanel.parentNode) {
+      state.activePanel.remove();
+    }
+    state.activePanel = null;
+  }
+
+  // ---------- Tooltip 提示 ----------
+
+  function showTooltip(text) {
+    const existing = document.querySelector('.xhs-fmt-tooltip');
+    if (existing) existing.remove();
+
+    const tip = document.createElement('div');
+    tip.className = 'xhs-fmt-tooltip';
+    tip.textContent = text;
+    document.body.appendChild(tip);
+
+    setTimeout(() => {
+      tip.classList.add('xhs-fmt-tooltip-fade');
+      setTimeout(() => tip.remove(), 300);
+    }, 2000);
+  }
+
+  // ---------- Pro 弹窗（仅试用过期 / 未购买） ----------
 
   function showProModal() {
-    if (state.isPro) return;
+    if (state.proSource === 'activation') return;
 
-    // 避免重复弹窗
     if (document.getElementById('xhs-fmt-pro-modal-overlay')) return;
+
+    let titleText = '⭐ 升级到 Pro';
+    let descText = '解锁全部高级功能：排版模板、配色方案、格式清理、自定义模板、话题标签管理';
+
+    if (state.proSource === 'trial') {
+      titleText = '⭐ 试用期结束后升级';
+      descText = '你的试用期即将结束，升级永久版继续享受所有高级功能';
+    }
 
     const overlay = document.createElement('div');
     overlay.id = 'xhs-fmt-pro-modal-overlay';
     overlay.innerHTML = `
       <div id="xhs-fmt-pro-modal">
-        <h2>⭐ 升级到 Pro</h2>
-        <p>解锁全部高级功能：排版模板、配色方案、格式清理、自定义模板、话题标签管理</p>
+        <h2>${titleText}</h2>
+        <p>${descText}</p>
         <span class="xhs-fmt-price">¥29.9 <small>终身买断</small></span>
         <button class="xhs-fmt-pro-btn-buy">立即升级 →</button>
         <br/>
         <button class="xhs-fmt-pro-btn-close">以后再说</button>
+        <div style="margin-top:12px; text-align:center;">
+          <span class="xhs-fmt-pro-link-activate" style="color:#1976d2; cursor:pointer; font-size:13px; font-weight:600;">🔑 已有激活码？点击输入</span>
+        </div>
+        <div id="xhs-fmt-activate-section" style="display:none; margin-top:12px;">
+          <input type="text" id="xhs-fmt-license-input" placeholder="XHS-PRO-XXXX-XXXX-XX"
+                 style="width:90%; padding:8px; border:1px solid #ddd; border-radius:6px; font-family:monospace; font-size:13px;">
+          <div style="margin-top:8px;">
+            <button id="xhs-fmt-btn-activate" style="background:#1976d2; color:#fff; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; font-size:13px;">激活 Pro</button>
+            <button id="xhs-fmt-btn-cancel-activate" style="background:#f5f5f5; color:#666; border:1px solid #ddd; border-radius:6px; padding:8px 16px; cursor:pointer; font-size:13px; margin-left:8px;">取消</button>
+          </div>
+          <div id="xhs-fmt-activate-result" style="margin-top:8px; font-size:13px;"></div>
+        </div>
       </div>
     `;
 
@@ -393,14 +699,18 @@
       if (e.target === overlay) overlay.remove();
     });
 
-    // 等 DOM 挂载后绑定事件
     setTimeout(() => {
       const buyBtn = overlay.querySelector('.xhs-fmt-pro-btn-buy');
       const closeBtn = overlay.querySelector('.xhs-fmt-pro-btn-close');
+      const activateLink = overlay.querySelector('.xhs-fmt-pro-link-activate');
+      const activateSection = overlay.querySelector('#xhs-fmt-activate-section');
+      const activateBtn = overlay.querySelector('#xhs-fmt-btn-activate');
+      const cancelBtn = overlay.querySelector('#xhs-fmt-btn-cancel-activate');
+      const licenseInput = overlay.querySelector('#xhs-fmt-license-input');
+      const resultDiv = overlay.querySelector('#xhs-fmt-activate-result');
 
       if (buyBtn) {
         buyBtn.addEventListener('click', () => {
-          // 打开面包多支付链接（需要替换为真实链接）
           window.open('https://afdian.com/item/b4dab2045cf111f18bfd52540025c377', '_blank');
         });
       }
@@ -408,14 +718,52 @@
       if (closeBtn) {
         closeBtn.addEventListener('click', () => overlay.remove());
       }
+
+      if (activateLink) {
+        activateLink.addEventListener('click', () => {
+          activateSection.style.display = 'block';
+          licenseInput.focus();
+        });
+      }
+
+      if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+          activateSection.style.display = 'none';
+          licenseInput.value = '';
+          resultDiv.textContent = '';
+        });
+      }
+
+      if (activateBtn && licenseInput) {
+        activateBtn.addEventListener('click', async () => {
+          const rawKey = licenseInput.value.trim().toUpperCase();
+          if (!rawKey) {
+            resultDiv.textContent = '请输入激活码';
+            resultDiv.style.color = '#c62828';
+            return;
+          }
+          if (!/^XHS-PRO-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{2}$/.test(rawKey)) {
+            resultDiv.textContent = '激活码格式不正确，请检查后重试';
+            resultDiv.style.color = '#c62828';
+            return;
+          }
+          await saveStorage(CONFIG.PRO_KEY, rawKey);
+          state.isPro = true;
+          state.proSource = 'activation';
+          resultDiv.textContent = '✅ 激活成功！所有 Pro 功能已解锁';
+          resultDiv.style.color = '#2e7d32';
+          activateSection.style.display = 'none';
+          licenseInput.value = '';
+          setTimeout(() => { overlay.remove(); injectToolbar(); }, 1500);
+        });
+      }
     }, 100);
 
     document.body.appendChild(overlay);
   }
 
-  // ---------- MutationObserver 监控编辑器出现 ----------
+  // ---------- MutationObserver ----------
 
-  /** 监听 DOM 变化，等待编辑器出现后注入工具栏 */
   function startObserver() {
     const observer = new MutationObserver(
       debounce(() => {
@@ -430,24 +778,28 @@
       subtree: true,
     });
 
-    // 立即尝试一次
     injectToolbar();
   }
+
+  // ---------- 全局点击关闭面板 ----------
+
+  document.addEventListener('click', (e) => {
+    if (state.activePanel && !state.activePanel.contains(e.target) && !e.target.closest('#xhs-fmt-toolbar')) {
+      closeActivePanel();
+    }
+  });
 
   // ---------- 启动 ----------
 
   async function init() {
-    console.log('[小红书排版助手] 插件已加载');
+    console.log('[小红书排版助手] v1.1.0 插件已加载');
 
-    // 初始化 Pro 状态
     await initProStatus();
-    console.log('[小红书排版助手] Pro 状态:', state.isPro);
+    console.log('[小红书排版助手] 状态:', state.proSource, 'isPro:', state.isPro);
 
-    // 开始监控编辑器 DOM
     startObserver();
   }
 
-  // 页面加载完成后初始化
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

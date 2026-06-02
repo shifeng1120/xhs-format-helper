@@ -5,7 +5,6 @@
 (function () {
   'use strict';
 
-  const PRO_KEY_PREFIX = 'XHS-PRO-';
   const BUY_URL = 'https://afdian.com/item/b4dab2045cf111f18bfd52540025c377'; // 爱发电商品
   const EDITOR_URLS = [
     'https://creator.xiaohongshu.com/publish/publish',
@@ -17,6 +16,11 @@
     statusBadge: document.getElementById('status-badge'),
     formatCount: document.getElementById('format-count'),
     version: document.getElementById('version'),
+    trialInfoRow: document.getElementById('trial-info-row'),
+    trialRemaining: document.getElementById('trial-remaining'),
+    trialBanner: document.getElementById('trial-banner'),
+    trialCountdown: document.getElementById('trial-countdown'),
+    expiredBanner: document.getElementById('expired-banner'),
     proActivated: document.getElementById('pro-activated-section'),
     proUpgrade: document.getElementById('pro-upgrade-section'),
     activateSection: document.getElementById('activate-section'),
@@ -45,9 +49,16 @@
 
   async function checkProStatus() {
     return new Promise((resolve) => {
-      chrome.storage.sync.get('xhs_fmt_pro_key', (result) => {
-        const key = result['xhs_fmt_pro_key'] || '';
-        resolve(isValidProKey(key));
+      chrome.runtime.sendMessage({ action: 'isPro' }, (result) => {
+        resolve(result || { isPro: false, source: 'none' });
+      });
+    });
+  }
+
+  async function checkTrial() {
+    return new Promise((resolve) => {
+      chrome.runtime.sendMessage({ action: 'checkTrialStatus' }, (result) => {
+        resolve(result || { inTrial: false, remainingMs: 0, remainingDays: 0 });
       });
     });
   }
@@ -75,17 +86,12 @@
   // ---------- UI 更新 ----------
 
   async function updateUI() {
-    const isPro = await checkProStatus();
+    const proStatus = await checkProStatus();
+    const trial = await checkTrial();
     const stats = await getStats();
 
-    // 状态标签
-    if (isPro) {
-      els.statusBadge.textContent = 'Pro 已激活';
-      els.statusBadge.className = 'badge badge-pro';
-    } else {
-      els.statusBadge.textContent = 'Free 版';
-      els.statusBadge.className = 'badge badge-free';
-    }
+    const isProActive = proStatus.isPro;
+    const proSource = proStatus.source; // 'activation' | 'trial' | 'expired' | 'none'
 
     // 使用次数
     els.formatCount.textContent = stats.formatCount || 0;
@@ -93,8 +99,48 @@
     // 版本号
     els.version.textContent = chrome.runtime.getManifest().version;
 
-    // 显示/隐藏 Pro 区域
-    if (isPro) {
+    // ---- 状态标签 ----
+    if (proSource === 'activation') {
+      els.statusBadge.textContent = 'Pro 已激活';
+      els.statusBadge.className = 'badge badge-pro';
+    } else if (proSource === 'trial') {
+      els.statusBadge.textContent = '试用中';
+      els.statusBadge.className = 'badge badge-trial';
+    } else if (proSource === 'expired') {
+      els.statusBadge.textContent = '试用已过期';
+      els.statusBadge.className = 'badge badge-expired';
+    } else {
+      els.statusBadge.textContent = 'Free 版';
+      els.statusBadge.className = 'badge badge-free';
+    }
+
+    // ---- 试用剩余时间行 ----
+    if (proSource === 'trial') {
+      els.trialInfoRow.classList.remove('hidden');
+      const days = trial.remainingDays || 1;
+      els.trialRemaining.textContent = days <= 1 ? '最后 1 天' : `${days} 天`;
+    } else {
+      els.trialInfoRow.classList.add('hidden');
+    }
+
+    // ---- 试用期横幅 ----
+    if (proSource === 'trial') {
+      els.trialBanner.classList.remove('hidden');
+      const days = trial.remainingDays || 1;
+      els.trialCountdown.textContent = days <= 1 ? '⏳ 1 天' : `⏳ ${days} 天`;
+    } else {
+      els.trialBanner.classList.add('hidden');
+    }
+
+    // ---- 试用过期横幅 ----
+    if (proSource === 'expired') {
+      els.expiredBanner.classList.remove('hidden');
+    } else {
+      els.expiredBanner.classList.add('hidden');
+    }
+
+    // ---- Pro 区域 ----
+    if (proSource === 'activation') {
       els.proActivated.classList.remove('hidden');
       els.proUpgrade.classList.add('hidden');
     } else {
@@ -114,16 +160,19 @@
     chrome.tabs.create({ url: BUY_URL });
   });
 
-  // 显示激活码输入
+  // 显示激活码输入（点击独立入口）
   els.btnShowActivate.addEventListener('click', () => {
     els.activateSection.classList.remove('hidden');
+    els.btnShowActivate.classList.add('hidden');
     els.licenseInput.focus();
   });
 
   // 取消激活
   els.btnCancelActivate.addEventListener('click', () => {
     els.activateSection.classList.add('hidden');
+    els.btnShowActivate.classList.remove('hidden');
     els.licenseInput.value = '';
+    els.activateResult.classList.add('hidden');
   });
 
   // 激活 Pro
@@ -149,6 +198,7 @@
           await saveProKey(key);
           showResult('✅ 激活成功！所有 Pro 功能已解锁', true);
           els.activateSection.classList.add('hidden');
+          els.btnShowActivate.classList.remove('hidden');
           els.licenseInput.value = '';
           setTimeout(() => updateUI(), 1000);
         } else {
@@ -168,7 +218,6 @@
 
   // 打开小红书编辑器
   els.btnOpenEditor.addEventListener('click', () => {
-    // 尝试打开创作者后台
     chrome.tabs.query({ url: '*://creator.xiaohongshu.com/*' }, (tabs) => {
       if (tabs.length > 0) {
         chrome.tabs.update(tabs[0].id, { active: true });
@@ -180,7 +229,7 @@
 
   // 反馈
   els.btnContact.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'https://github.com/xhs-format-helper/xhs-format-helper/issues' });
+    chrome.tabs.create({ url: 'https://github.com/shifeng1120/xhs-format-helper/issues' });
   });
 
   // ---------- 辅助 ----------
