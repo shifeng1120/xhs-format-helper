@@ -11,6 +11,21 @@ const STORAGE_KEYS = {
 
 const TRIAL_DAYS = 3; // 试用天数
 
+function licenseChecksum(str) {
+  let sum = 0;
+  for (let i = 0; i < str.length; i++) {
+    sum += str.charCodeAt(i);
+  }
+  return (sum % 256).toString(16).toUpperCase().padStart(2, '0');
+}
+
+function verifyLicenseKey(key) {
+  const cleaned = String(key || '').trim().toUpperCase();
+  const match = cleaned.match(/^XHS-PRO-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{2})$/);
+  if (!match) return false;
+  return match[3] === licenseChecksum(match[1] + match[2]);
+}
+
 // ---------- 统计 ----------
 
 async function getStats() {
@@ -81,7 +96,9 @@ chrome.runtime.onInstalled.addListener((details) => {
     });
     console.log('[小红书排版助手] 已安装，3天试用期开始');
   } else if (details.reason === 'update') {
-    console.log('[小红书排版助手] 已更新:', details.previousVersion, '→', chrome.runtime.getManifest().version);
+    const version = chrome.runtime.getManifest().version;
+    console.log('[小红书排版助手] 已更新:', details.previousVersion, '→', version);
+    chrome.storage.local.set({ xhs_fmt_needs_refresh: version });
   }
 });
 
@@ -103,7 +120,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     case 'verifyProKey':
       const key = message.key || '';
-      const isValid = key.startsWith('XHS-PRO-') && key.length >= 16;
+      const isValid = verifyLicenseKey(key);
       if (isValid) {
         setProActivated().then(() => sendResponse({ valid: true }));
       } else {
@@ -116,7 +133,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const checkProAndTrial = async () => {
         const keyResult = await chrome.storage.sync.get(STORAGE_KEYS.PRO_KEY);
         const savedKey = keyResult[STORAGE_KEYS.PRO_KEY] || '';
-        const hasProKey = savedKey.startsWith('XHS-PRO-') && savedKey.length >= 16;
+        const hasProKey = verifyLicenseKey(savedKey);
         if (hasProKey) return { isPro: true, source: 'activation' };
 
         const trial = await checkTrialStatus();

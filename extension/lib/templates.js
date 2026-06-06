@@ -1,115 +1,344 @@
 // ============================================
-// 小红书排版助手 - 排版模板定义
-// 5 套小红书风格模板
+// 小红书排版助手 - 多风格排版模板 v2.0
+// 12 套小红书爆款风格，含示例文案
 // ============================================
 
-const XhsTemplates = [
-  {
-    id: 'clean',
-    name: '清新简约',
-    emoji: '🌿',
-    desc: '干净利落，适合日常分享',
-    style: {
-      fontSize: '16px',
-      lineHeight: '1.75',
-      color: '#333333',
-      textAlign: 'left',
+(function (global) {
+  'use strict';
+
+  const XhsTemplates = [
+    {
+      id: 'plant-grass',
+      name: '种草清单',
+      category: '好物',
+      emoji: '🛍️',
+      desc: '好物推荐、开箱测评、购物分享',
+      color: '#FF6B81',
+      exampleInput: '今天分享3个超好用的收纳神器\n第一个是桌面收纳盒\n第二个是标签机\n第三个是抽屉分隔板\n真的太好用了',
+      exampleOutput: '✨ 今天分享3个超好用的收纳神器\n\n📌 种草清单\n▪️ 第一个是桌面收纳盒\n▪️ 第二个是标签机\n▪️ 第三个是抽屉分隔板\n\n真的太好用了\n\n💬 觉得有用记得点赞收藏～有问题评论区见！',
+      rules: {
+        hookEmoji: '✨',
+        listBullet: '▪️',
+        listTitle: '📌 种草清单',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 22,
+        addCTA: true,
+        ctaText: '💬 觉得有用记得点赞收藏～有问题评论区见！',
+      },
     },
-    headingStyle: {
-      fontSize: '20px',
-      fontWeight: 'bold',
-      color: '#333333',
+    {
+      id: 'tutorial',
+      name: '干货教程',
+      category: '教程',
+      emoji: '📚',
+      desc: '步骤教学、技巧分享、保姆级攻略',
+      color: '#4A90D9',
+      exampleInput: '新手化妆必看\n先做好保湿打底\n再用遮瑕盖住瑕疵\n最后定妆喷雾锁妆\n保证一整天不脱妆',
+      exampleOutput: '✨ 新手化妆必看\n\n📖 保姆级教程\n➡️ Step1 先做好保湿打底\n➡️ Step2 再用遮瑕盖住瑕疵\n➡️ Step3 最后定妆喷雾锁妆\n\n保证一整天不脱妆\n\n💡 建议收藏反复看，实操更有感觉～',
+      rules: {
+        hookEmoji: '✨',
+        listTitle: '📖 保姆级教程',
+        useStepNumber: true,
+        stepBullet: '➡️',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 24,
+        addCTA: true,
+        ctaText: '💡 建议收藏反复看，实操更有感觉～',
+      },
     },
-  },
-  {
-    id: 'business',
-    name: '干练商务',
-    emoji: '💼',
-    desc: '专业正式，适合职场/知识分享',
-    style: {
-      fontSize: '15px',
-      lineHeight: '1.5',
-      color: '#222222',
-      textAlign: 'left',
+    {
+      id: 'daily-plog',
+      name: '日常plog',
+      category: '生活',
+      emoji: '🌸',
+      desc: '生活记录、日常碎片、氛围感分享',
+      color: '#FF8FAB',
+      exampleInput: '周末去了家宝藏咖啡店\n阳光透过落地窗洒进来\n点了一杯燕麦拿铁\n坐了一下午好治愈\n推荐给喜欢安静的姐妹',
+      exampleOutput: '🌷 周末去了家宝藏咖啡店\n\n阳光透过落地窗洒进来\n\n点了一杯燕麦拿铁\n\n坐了一下午好治愈\n\n推荐给喜欢安静的姐妹\n\n🤍 你们周末都喜欢去哪？评论区聊聊～',
+      rules: {
+        hookEmoji: '🌷',
+        paragraphGap: 2,
+        maxLineLength: 18,
+        boldKeywords: false,
+        addCTA: true,
+        ctaText: '🤍 你们周末都喜欢去哪？评论区聊聊～',
+      },
     },
-    headingStyle: {
-      fontSize: '18px',
-      fontWeight: 'bold',
-      color: '#1a1a1a',
+    {
+      id: 'career',
+      name: '职场干货',
+      category: '职场',
+      emoji: '💼',
+      desc: '职场技巧、面试经验、升职加薪',
+      color: '#2C3E50',
+      exampleInput: '面试被问缺点怎么答\n不要说性格缺陷\n要说可改进的技能短板\n并给出具体改进计划\n这样显得真诚又专业',
+      exampleOutput: '💼 面试被问缺点怎么答\n\n🔑 核心要点\n▪️ 不要说性格缺陷\n▪️ 要说可改进的技能短板\n▪️ 并给出具体改进计划\n\n这样显得真诚又专业\n\n📌 建议收藏，求职用得上！',
+      rules: {
+        hookEmoji: '💼',
+        listBullet: '▪️',
+        listTitle: '🔑 核心要点',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 20,
+        addCTA: true,
+        ctaText: '📌 建议收藏，求职用得上！',
+      },
     },
-  },
-  {
-    id: 'cute',
-    name: '可爱清新',
-    emoji: '🌸',
-    desc: '甜美可爱，适合美妆/穿搭/日常',
-    style: {
-      fontSize: '16px',
-      lineHeight: '2.0',
-      color: '#555555',
-      textAlign: 'center',
+    {
+      id: 'beauty',
+      name: '美妆测评',
+      category: '美妆',
+      emoji: '💄',
+      desc: '护肤彩妆、成分分析、上脸实测',
+      color: '#E91E63',
+      exampleInput: '混油皮亲测这款粉底液\n遮瑕力中等偏上\n持妆大概6小时\n氧化不明显\n性价比很高值得入',
+      exampleOutput: '💄 混油皮亲测这款粉底液\n\n✅ 实测感受\n▪️ 遮瑕力中等偏上\n▪️ 持妆大概6小时\n▪️ 氧化不明显\n\n💰 性价比很高值得入\n\n🌟 肤质不同效果不同，评论区告诉我你的肤质～',
+      rules: {
+        hookEmoji: '💄',
+        listBullet: '▪️',
+        listTitle: '✅ 实测感受',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 20,
+        addCTA: true,
+        ctaText: '🌟 肤质不同效果不同，评论区告诉我你的肤质～',
+      },
     },
-    headingStyle: {
-      fontSize: '22px',
-      fontWeight: 'bold',
-      color: '#e91e63',
+    {
+      id: 'food-travel',
+      name: '探店打卡',
+      category: '探店',
+      emoji: '🍜',
+      desc: '美食探店、旅行攻略、城市漫游',
+      color: '#FF9800',
+      exampleInput: '上海这家日料绝了\n人均150左右\n必点三文鱼刺身\n环境很安静适合约会\n记得提前预约',
+      exampleOutput: '🍜 上海这家日料绝了\n\n📍 探店信息\n▪️ 人均150左右\n▪️ 必点三文鱼刺身\n▪️ 环境很安静适合约会\n\n⚠️ 记得提前预约\n\n❤️ 还想看哪家探店？评论区告诉我！',
+      rules: {
+        hookEmoji: '🍜',
+        listBullet: '▪️',
+        listTitle: '📍 探店信息',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 20,
+        addCTA: true,
+        ctaText: '❤️ 还想看哪家探店？评论区告诉我！',
+      },
     },
-  },
-  {
-    id: 'minimal',
-    name: '极简留白',
-    emoji: '◻️',
-    desc: '大量留白，适合摄影/艺术/生活感悟',
-    style: {
-      fontSize: '17px',
-      lineHeight: '2.5',
-      color: '#444444',
-      textAlign: 'left',
+    {
+      id: 'minimal',
+      name: '极简文艺',
+      category: '文艺',
+      emoji: '◻️',
+      desc: '摄影感悟、读书笔记、生活美学',
+      color: '#78909C',
+      exampleInput: '有些风景\n要停下来才能看见\n有些日子\n要慢慢过才有味道',
+      exampleOutput: '▫️ 有些风景\n\n要停下来才能看见\n\n有些日子\n\n要慢慢过才有味道\n\n—\n\n🤍 愿你也有慢下来的时刻',
+      rules: {
+        hookEmoji: '▫️',
+        paragraphGap: 2,
+        maxLineLength: 14,
+        sectionDivider: '—',
+        boldKeywords: false,
+        addCTA: true,
+        ctaText: '🤍 愿你也有慢下来的时刻',
+      },
     },
-    headingStyle: {
-      fontSize: '24px',
-      fontWeight: '300',
-      color: '#222222',
+    {
+      id: 'emotional',
+      name: '情感共鸣',
+      category: '情感',
+      emoji: '💭',
+      desc: '情感语录、治愈文案、深夜心事',
+      color: '#9C27B0',
+      exampleInput: '后来才明白\n不是所有的付出都有回报\n但每一次真心\n都算数',
+      exampleOutput: '💭 后来才明白\n\n不是所有的付出都有回报\n\n但每一次真心\n\n都算数\n\n🌙 哪句话戳到你了？评论区说说',
+      rules: {
+        hookEmoji: '💭',
+        paragraphGap: 2,
+        maxLineLength: 16,
+        boldKeywords: false,
+        addCTA: true,
+        ctaText: '🌙 哪句话戳到你了？评论区说说',
+      },
     },
-  },
-  {
-    id: 'vintage',
-    name: '复古文艺',
-    emoji: '📜',
-    desc: '复古色调，适合书评/影评/情感',
-    style: {
-      fontSize: '16px',
-      lineHeight: '1.8',
+    {
+      id: 'knowledge',
+      name: '知识卡片',
+      category: '知识',
+      emoji: '💡',
+      desc: '冷知识、学习方法、效率提升',
+      color: '#00BCD4',
+      exampleInput: '番茄工作法真的有用\n25分钟专注工作\n5分钟休息\n4个循环后长休息\n效率提升明显',
+      exampleOutput: '💡 番茄工作法真的有用\n\n📝 方法拆解\n➡️ Step1 25分钟专注工作\n➡️ Step2 5分钟休息\n➡️ Step3 4个循环后长休息\n\n效率提升明显\n\n🔖 收藏起来下次用！',
+      rules: {
+        hookEmoji: '💡',
+        listTitle: '📝 方法拆解',
+        useStepNumber: true,
+        stepBullet: '➡️',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 22,
+        addCTA: true,
+        ctaText: '🔖 收藏起来下次用！',
+      },
+    },
+    {
+      id: 'ootd',
+      name: '穿搭OOTD',
+      category: '穿搭',
+      emoji: '👗',
+      desc: '每日穿搭、显瘦技巧、搭配公式',
+      color: '#F06292',
+      exampleInput: '梨形身材穿搭公式\n上繁下简显比例\n高腰裤拉长腿部\n深色下装更显瘦\n小个子也能驾驭',
+      exampleOutput: '👗 梨形身材穿搭公式\n\n✨ 搭配要点\n▪️ 上繁下简显比例\n▪️ 高腰裤拉长腿部\n▪️ 深色下装更显瘦\n\n小个子也能驾驭\n\n📸 想看更多穿搭？关注我不迷路～',
+      rules: {
+        hookEmoji: '👗',
+        listBullet: '▪️',
+        listTitle: '✨ 搭配要点',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 18,
+        addCTA: true,
+        ctaText: '📸 想看更多穿搭？关注我不迷路～',
+      },
+    },
+    {
+      id: 'warning',
+      name: '避坑指南',
+      category: '避坑',
+      emoji: '⚠️',
+      desc: '踩雷预警、消费避坑、经验总结',
+      color: '#FF5722',
+      exampleInput: '买护肤品千万别踩这些坑\n不看成分表就下单\n盲目跟风网红款\n忽视自己肤质\n浪费钱还可能烂脸',
+      exampleOutput: '⚠️ 买护肤品千万别踩这些坑\n\n🚫 避坑清单\n▪️ 不看成分表就下单\n▪️ 盲目跟风网红款\n▪️ 忽视自己肤质\n\n⚠️ 浪费钱还可能烂脸\n\n💬 你踩过什么坑？评论区一起避雷！',
+      rules: {
+        hookEmoji: '⚠️',
+        listBullet: '▪️',
+        listTitle: '🚫 避坑清单',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 20,
+        addCTA: true,
+        ctaText: '💬 你踩过什么坑？评论区一起避雷！',
+      },
+    },
+    {
+      id: 'interview',
+      name: '面试题库',
+      category: '职场',
+      emoji: '🎯',
+      desc: '面试题清单、八股整理、求职干货',
+      color: '#1565C0',
+      exampleInput: '13. 讲讲模型过拟合怎么解决\n14. RAG海量数据优化方案\n15. 怎么抑制大模型幻觉\n16. Agent架构和工具调用流程',
+      exampleOutput: '🎯 高频面试题整理\n\n📋 面试题清单\n▪️ 13. 讲讲模型过拟合怎么解决\n▪️ 14. RAG海量数据优化方案\n▪️ 15. 怎么抑制大模型幻觉\n▪️ 16. Agent架构和工具调用流程\n\n📌 收藏备用，祝你面试顺利！',
+      rules: {
+        hookEmoji: '🎯',
+        listBullet: '▪️',
+        listTitle: '📋 面试题清单',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 28,
+        addCTA: true,
+        ctaText: '📌 收藏备用，祝你面试顺利！',
+      },
+    },
+    {
+      id: 'conversion',
+      name: '带货成交',
+      category: '商业',
+      emoji: '🧲',
+      desc: '产品种草、课程转化、店铺引流',
+      color: '#D94A38',
+      exampleInput: '这款早餐杯适合上班族\n容量够大不漏水\n早上装燕麦和水果很方便\n清洗也不麻烦\n通勤带着不占地方',
+      exampleOutput: '🧲 这款早餐杯适合上班族\n\n✅ 适合谁\n▪️ 早上没时间做饭的人\n▪️ 想带健康早餐去公司的人\n▪️ 包里空间不大的通勤党\n\n🔥 真实体验\n▪️ 容量够大不漏水\n▪️ 装燕麦和水果很方便\n▪️ 清洗也不麻烦\n\n📌 想要链接/型号可以评论区问我～',
+      rules: {
+        hookEmoji: '🧲',
+        listBullet: '▪️',
+        listTitle: '✅ 为什么值得入',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 20,
+        addCTA: true,
+        ctaText: '📌 想要链接/型号可以评论区问我～',
+      },
+    },
+    {
+      id: 'operator',
+      name: '账号运营',
+      category: '运营',
+      emoji: '📈',
+      desc: '涨粉复盘、选题拆解、内容策略',
+      color: '#2454D6',
+      exampleInput: '小红书新号不要一上来就乱发\n先确定人群和赛道\n再拆10个对标账号\n标题封面统一风格\n连续测试20篇再复盘数据',
+      exampleOutput: '📈 小红书新号不要一上来就乱发\n\n🔍 运营动作\n➡️ Step1 先确定人群和赛道\n➡️ Step2 再拆10个对标账号\n➡️ Step3 标题封面统一风格\n➡️ Step4 连续测试20篇再复盘数据\n\n💡 重点不是发得多，而是每篇都有验证目标\n\n📌 做账号的朋友建议收藏这套流程',
+      rules: {
+        hookEmoji: '📈',
+        listTitle: '🔍 运营动作',
+        useStepNumber: true,
+        stepBullet: '➡️',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 24,
+        addCTA: true,
+        ctaText: '📌 做账号的朋友建议收藏这套流程',
+      },
+    },
+    {
+      id: 'viral-title',
+      name: '爆款标题',
+      category: '运营',
+      emoji: '🔥',
+      desc: '标题公式、选题包装、开头钩子',
+      color: '#F04438',
+      exampleInput: '普通标题可以改得更有点击欲\n不要只写产品名\n要写人群痛点和结果\n比如新手也能学会的3个收纳技巧',
+      exampleOutput: '🔥 普通标题可以改得更有点击欲\n\n🧠 标题公式\n▪️ 人群：写给谁看\n▪️ 痛点：解决什么问题\n▪️ 结果：看完能得到什么\n\n✨ 示例\n新手也能学会的3个收纳技巧\n\n📌 收藏，下次写标题前先套这个公式',
+      rules: {
+        hookEmoji: '🔥',
+        listBullet: '▪️',
+        listTitle: '🧠 标题公式',
+        forceList: true,
+        boldKeywords: true,
+        maxLineLength: 22,
+        addCTA: true,
+        ctaText: '📌 收藏，下次写标题前先套这个公式',
+      },
+    },
+    {
+      id: 'story',
+      name: '故事叙事',
+      category: '故事',
+      emoji: '📖',
+      desc: '个人经历、蜕变故事、成长记录',
       color: '#5D4037',
-      textAlign: 'left',
+      exampleInput: '一年前的我\n月薪3000月光族\n开始学习理财\n坚持记账和储蓄\n现在有了人生第一笔存款',
+      exampleOutput: '✨ 一年前的我\n\n月薪3000月光族\n\n开始学习理财\n坚持记账和储蓄\n\n🎯 现在有了人生第一笔存款\n\n💪 你的改变故事是什么？评论区分享！',
+      rules: {
+        hookEmoji: '✨',
+        sectionEmoji: '🎯',
+        maxLineLength: 18,
+        boldKeywords: true,
+        addCTA: true,
+        ctaText: '💪 你的改变故事是什么？评论区分享！',
+      },
     },
-    headingStyle: {
-      fontSize: '20px',
-      fontWeight: 'bold',
-      color: '#3E2723',
-    },
-  },
-];
+  ];
 
-/** 应用模板到编辑器 */
-function applyTemplate(templateId, editor) {
-  const template = XhsTemplates.find((t) => t.id === templateId);
-  if (!template || !editor) return;
-
-  // 应用到编辑器内的所有段落
-  const paragraphs = editor.querySelectorAll('p, div[style*="margin"], [data-block]');
-  if (paragraphs.length === 0) {
-    // 直接应用样式到编辑器内容
-    editor.style.fontSize = template.style.fontSize;
-    editor.style.lineHeight = template.style.lineHeight;
-    editor.style.color = template.style.color;
-    editor.style.textAlign = template.style.textAlign;
-  } else {
-    paragraphs.forEach((p) => {
-      p.style.fontSize = template.style.fontSize;
-      p.style.lineHeight = template.style.lineHeight;
-      p.style.color = template.style.color;
-      p.style.textAlign = template.style.textAlign;
+  /** 按分类分组 */
+  function getCategories() {
+    const cats = {};
+    XhsTemplates.forEach((t) => {
+      if (!cats[t.category]) cats[t.category] = [];
+      cats[t.category].push(t);
     });
+    return cats;
   }
-}
+
+  function getTemplateById(id) {
+    return XhsTemplates.find((t) => t.id === id);
+  }
+
+  global.XhsTemplates = XhsTemplates;
+  global.XhsTemplateUtils = { getCategories, getTemplateById };
+})(typeof window !== 'undefined' ? window : self);

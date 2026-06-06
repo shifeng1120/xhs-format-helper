@@ -1,5 +1,5 @@
 /* ============================================
-   小红书排版助手 - 工具栏样式 v1.1.0
+   小红书排版助手 - 工具栏样式 v2.0.0
    ============================================ */
 
 /* --- 工具栏容器 --- */
@@ -11,10 +11,10 @@
   gap: 4px !important;
   padding: 8px 12px !important;
   margin-bottom: 8px !important;
-  background: #ffffff !important;
-  border: 1px solid #e0e0e0 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+  background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(255,248,244,0.98)) !important;
+  border: 1px solid rgba(255, 107, 129, 0.18) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 28px rgba(67, 41, 54, 0.12) !important;
   position: relative !important;
   z-index: 999999 !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
@@ -116,6 +116,37 @@
 #xhs-fmt-toolbar .xhs-fmt-btn-text:hover {
   background: #f5f5f5 !important;
   border-color: #e0e0e0 !important;
+}
+
+/* --- 主操作按钮：一键排版 --- */
+#xhs-fmt-toolbar .xhs-fmt-btn-primary {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 34px !important;
+  padding: 0 14px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #ff6b81, #ff4757) !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  box-shadow: 0 2px 8px rgba(255,71,87,0.35) !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(255,71,87,0.45) !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-btn-primary-alt {
+  background: linear-gradient(135deg, #7c4dff, #ff6b81) !important;
+  box-shadow: 0 2px 8px rgba(124,77,255,0.35) !important;
 }
 
 /* --- 升级按钮（特殊颜色） --- */
@@ -245,6 +276,30 @@
   line-height: 1 !important;
 }
 
+#xhs-fmt-toolbar .xhs-fmt-toolbar-close {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 26px !important;
+  height: 26px !important;
+  margin-left: auto !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #bbb !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+  flex-shrink: 0 !important;
+}
+
+#xhs-fmt-toolbar .xhs-fmt-toolbar-close:hover {
+  background: #f5f5f5 !important;
+  color: #666 !important;
+}
+
 #xhs-fmt-toolbar .xhs-fmt-drag-handle:active {
   cursor: grabbing !important;
 }
@@ -357,6 +412,844 @@
   font-size: 11px !important;
   color: #999 !important;
   line-height: 1.3 !important;
+}
+
+/* --- v2 大面板 --- */
+.xhs-fmt-panel-large {
+  max-width: 640px !important;
+}
+
+.xhs-fmt-panel-hint {
+  all: initial;
+  display: block !important;
+  padding: 8px 16px !important;
+  font-size: 12px !important;
+  color: #ff6b81 !important;
+  background: #fff5f6 !important;
+  border-bottom: 1px solid #ffe0e6 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* --- 分类标签 --- */
+.xhs-fmt-category-tabs {
+  all: initial;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+.xhs-fmt-category-tab {
+  all: initial;
+  display: inline-block !important;
+  padding: 5px 12px !important;
+  border-radius: 16px !important;
+  font-size: 12px !important;
+  color: #666 !important;
+  background: #f5f5f5 !important;
+  border: 1px solid transparent !important;
+  cursor: pointer !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  transition: all 0.15s ease !important;
+}
+
+.xhs-fmt-category-tab:hover {
+  background: #ffe0e6 !important;
+  color: #ff4757 !important;
+}
+
+.xhs-fmt-category-tab.active {
+  background: #ff6b81 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+/* --- v2 模板卡片 --- */
+.xhs-fmt-template-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+  max-height: 420px !important;
+  overflow-y: auto !important;
+}
+
+.xhs-fmt-template-card-v2 {
+  all: initial;
+  display: flex !important;
+  flex-direction: column !important;
+  background: #fff !important;
+  border: 1px solid #eee !important;
+  border-radius: 10px !important;
+  padding: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-sizing: border-box !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-template-card-v2:hover {
+  border-color: #ff8fab !important;
+  box-shadow: 0 4px 12px rgba(255,107,129,0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+.xhs-fmt-template-card-v2.active {
+  border-color: #ff6b81 !important;
+  background: #fff8f9 !important;
+}
+
+.xhs-fmt-template-card-v2.recommended {
+  border-color: #ff6b81 !important;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 240, 0.96), rgba(255, 255, 255, 0.98)) !important;
+  box-shadow: 0 8px 22px rgba(255, 107, 129, 0.16) !important;
+  position: relative !important;
+}
+
+.xhs-fmt-template-card-v2.recommended::before {
+  content: "智能推荐" !important;
+  position: absolute !important;
+  top: -8px !important;
+  right: 10px !important;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #ff6b81, #ff8a65) !important;
+  color: #fff !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 10px rgba(255, 107, 129, 0.25) !important;
+}
+
+.xhs-fmt-card-header {
+  all: initial;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-bottom: 8px !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-card-emoji {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+.xhs-fmt-card-name {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #333 !important;
+  flex: 1 !important;
+}
+
+.xhs-fmt-card-tag {
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  border-radius: 8px !important;
+  background: #f5f5f5 !important;
+  color: #999 !important;
+}
+
+.xhs-fmt-card-preview {
+  all: initial;
+  display: block !important;
+  background: #fafafa !important;
+  border-left: 3px solid #ff6b81 !important;
+  border-radius: 4px !important;
+  padding: 8px 10px !important;
+  margin-bottom: 8px !important;
+  min-height: 72px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-preview-line {
+  font-size: 11px !important;
+  color: #555 !important;
+  line-height: 1.5 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.xhs-fmt-card-desc {
+  font-size: 11px !important;
+  color: #999 !important;
+  line-height: 1.4 !important;
+  margin-bottom: 8px !important;
+}
+
+.xhs-fmt-card-apply {
+  all: initial;
+  display: block !important;
+  width: 100% !important;
+  padding: 7px 0 !important;
+  text-align: center !important;
+  background: linear-gradient(135deg, #ff6b81, #ff4757) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-card-apply:hover {
+  opacity: 0.9 !important;
+}
+
+/* --- 效果预览弹层 --- */
+.xhs-fmt-example-panel {
+  all: initial;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 90% !important;
+  max-width: 680px !important;
+  background: #fff !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.18) !important;
+  z-index: 1000002 !important;
+  overflow: hidden !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-example-header {
+  all: initial;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-example-body {
+  all: initial;
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  padding: 16px 18px !important;
+}
+
+.xhs-fmt-example-col {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.xhs-fmt-example-label {
+  font-size: 12px !important;
+  color: #999 !important;
+  margin-bottom: 6px !important;
+  font-weight: 600 !important;
+}
+
+.xhs-fmt-example-content {
+  background: #fafafa !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+  color: #444 !important;
+  min-height: 140px !important;
+  max-height: 200px !important;
+  overflow-y: auto !important;
+}
+
+.xhs-fmt-example-before {
+  border: 1px dashed #ddd !important;
+}
+
+.xhs-fmt-example-after {
+  border: 1px solid #ffcdd2 !important;
+  background: #fff8f9 !important;
+}
+
+.xhs-fmt-example-arrow {
+  display: flex !important;
+  align-items: center !important;
+  font-size: 20px !important;
+  color: #ff6b81 !important;
+  flex-shrink: 0 !important;
+}
+
+.xhs-fmt-example-apply {
+  all: initial;
+  display: block !important;
+  width: calc(100% - 36px) !important;
+  margin: 0 18px 16px !important;
+  padding: 12px !important;
+  text-align: center !important;
+  background: linear-gradient(135deg, #ff6b81, #ff4757) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* --- 选中文字浮动按钮 --- */
+#xhs-fmt-float-btn {
+  all: initial;
+  position: fixed !important;
+  display: none !important;
+  z-index: 1000001 !important;
+  padding: 8px 14px !important;
+  background: linear-gradient(135deg, #ff6b81, #ff4757) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 20px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 16px rgba(255,71,87,0.4) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  transition: transform 0.1s ease !important;
+  animation: xhsFmtPop 0.2s ease !important;
+}
+
+#xhs-fmt-float-btn:hover {
+  transform: scale(1.05) !important;
+}
+
+@keyframes xhsFmtPop {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* =============================================
+   图文卡片生成面板 v2.1
+   ============================================= */
+
+.xhs-fmt-image-panel {
+  max-width: 680px !important;
+}
+
+.xhs-fmt-image-body {
+  all: initial;
+  display: block !important;
+  padding: 14px 16px 16px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-image-field {
+  margin-bottom: 14px !important;
+}
+
+.xhs-fmt-image-field label {
+  display: block !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #999 !important;
+  margin-bottom: 6px !important;
+}
+
+.xhs-fmt-image-title {
+  width: 100% !important;
+  padding: 9px 12px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-image-title:focus {
+  border-color: #ff6b81 !important;
+}
+
+.xhs-fmt-image-sizes {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+.xhs-fmt-size-btn {
+  all: initial;
+  display: inline-block !important;
+  padding: 7px 16px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  color: #666 !important;
+  background: #f5f5f5 !important;
+  border: 1px solid #e0e0e0 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-size-btn.active {
+  background: #ff6b81 !important;
+  color: #fff !important;
+  border-color: #ff6b81 !important;
+  font-weight: 600 !important;
+}
+
+.xhs-fmt-image-layouts {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.xhs-fmt-image-layout-card {
+  all: initial;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 10px 6px !important;
+  border: 2px solid #eee !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  font-size: 11px !important;
+  color: #555 !important;
+  text-align: center !important;
+  font-family: inherit !important;
+  transition: all 0.15s ease !important;
+  background: #fafafa !important;
+}
+
+.xhs-fmt-image-layout-card:hover {
+  border-color: #90caf9 !important;
+}
+
+.xhs-fmt-image-layout-card.active {
+  border-color: #1976d2 !important;
+  background: #e3f2fd !important;
+  font-weight: 600 !important;
+}
+
+.xhs-fmt-layout-emoji {
+  font-size: 20px !important;
+  line-height: 1 !important;
+}
+
+.xhs-fmt-image-styles {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+}
+
+.xhs-fmt-insert-steps {
+  all: initial;
+  display: block !important;
+  padding: 12px 16px 0 32px !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.8 !important;
+  color: #444 !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-insert-steps li {
+  margin-bottom: 8px !important;
+}
+
+.xhs-fmt-guide-close {
+  all: initial;
+  display: inline-flex !important;
+  padding: 10px 18px !important;
+  border-radius: 8px !important;
+  background: #f5f5f5 !important;
+  color: #555 !important;
+  border: 1px solid #ddd !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-guide-download-all {
+  all: initial;
+  display: inline-flex !important;
+  flex: 1 !important;
+  justify-content: center !important;
+  padding: 10px 18px !important;
+  border-radius: 8px !important;
+  background: linear-gradient(135deg, #ff6b81, #ff8a65) !important;
+  color: #fff !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-image-style-card {
+  all: initial;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 8px 6px !important;
+  border: 2px solid #eee !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  font-size: 11px !important;
+  color: #555 !important;
+  text-align: center !important;
+  font-family: inherit !important;
+  transition: all 0.15s ease !important;
+}
+
+.xhs-fmt-image-style-card:hover {
+  border-color: #ff8fab !important;
+}
+
+.xhs-fmt-image-style-card.active {
+  border-color: #ff6b81 !important;
+  background: #fff5f6 !important;
+  font-weight: 600 !important;
+}
+
+.xhs-fmt-style-swatch {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+
+.xhs-fmt-image-generate {
+  all: initial;
+  display: block !important;
+  width: 100% !important;
+  padding: 12px !important;
+  margin-top: 4px !important;
+  text-align: center !important;
+  background: linear-gradient(135deg, #ff6b81, #ff4757) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-image-generate:hover {
+  opacity: 0.92 !important;
+}
+
+.xhs-fmt-image-preview-area {
+  margin-top: 14px !important;
+}
+
+.xhs-fmt-image-loading,
+.xhs-fmt-image-error {
+  text-align: center !important;
+  padding: 20px !important;
+  font-size: 13px !important;
+  color: #999 !important;
+}
+
+.xhs-fmt-image-error {
+  color: #c62828 !important;
+}
+
+.xhs-fmt-image-result-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 10px !important;
+  font-size: 13px !important;
+  color: #333 !important;
+}
+
+.xhs-fmt-image-download-all {
+  all: initial;
+  padding: 6px 12px !important;
+  background: #e8f5e9 !important;
+  color: #2e7d32 !important;
+  border: 1px solid #c8e6c9 !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-image-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  gap: 10px !important;
+  max-height: 360px !important;
+  overflow-y: auto !important;
+}
+
+.xhs-fmt-image-item {
+  border: 1px solid #eee !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: #fafafa !important;
+}
+
+.xhs-fmt-image-item img {
+  width: 100% !important;
+  display: block !important;
+  cursor: zoom-in !important;
+  aspect-ratio: 3/4 !important;
+  object-fit: cover !important;
+}
+
+.xhs-fmt-image-item-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 6px 8px !important;
+  font-size: 11px !important;
+  color: #999 !important;
+}
+
+.xhs-fmt-image-dl-single {
+  all: initial;
+  padding: 3px 8px !important;
+  background: #ff6b81 !important;
+  color: #fff !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-image-tips {
+  margin-top: 10px !important;
+  font-size: 11px !important;
+  color: #999 !important;
+  line-height: 1.5 !important;
+  padding: 8px 10px !important;
+  background: #fff8f9 !important;
+  border-radius: 6px !important;
+}
+
+/* --- 图片灯箱 --- */
+.xhs-fmt-image-lightbox {
+  all: initial;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.75) !important;
+  z-index: 1000003 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-lightbox-inner {
+  position: relative !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+  background: #fff !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3) !important;
+}
+
+.xhs-fmt-lightbox-inner img {
+  display: block !important;
+  max-width: 90vw !important;
+  max-height: 75vh !important;
+  object-fit: contain !important;
+}
+
+.xhs-fmt-lightbox-close {
+  position: absolute !important;
+  top: 10px !important;
+  right: 14px !important;
+  font-size: 22px !important;
+  color: #fff !important;
+  background: rgba(0,0,0,0.4) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 2 !important;
+}
+
+.xhs-fmt-lightbox-bar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 12px 16px !important;
+  border-top: 1px solid #f0f0f0 !important;
+  font-size: 14px !important;
+  color: #333 !important;
+}
+
+.xhs-fmt-lightbox-dl {
+  all: initial;
+  padding: 8px 16px !important;
+  background: #ff6b81 !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+/* --- 自定义背景上传 --- */
+.xhs-fmt-bg-upload-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.xhs-fmt-bg-upload-btn,
+.xhs-fmt-bg-clear-btn {
+  all: initial;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-bg-upload-btn {
+  background: #f5f5f5 !important;
+  border: 1px solid #e0e0e0 !important;
+  color: #555 !important;
+}
+
+.xhs-fmt-bg-clear-btn {
+  background: #ffebee !important;
+  color: #c62828 !important;
+  border: 1px solid #ffcdd2 !important;
+}
+
+.xhs-fmt-bg-hint {
+  font-size: 11px !important;
+  color: #bbb !important;
+}
+
+.xhs-fmt-bg-preview img {
+  max-width: 120px !important;
+  max-height: 80px !important;
+  border-radius: 6px !important;
+  margin-top: 6px !important;
+  border: 1px solid #eee !important;
+}
+
+.xhs-fmt-image-result-actions {
+  display: flex !important;
+  gap: 6px !important;
+}
+
+.xhs-fmt-image-insert-all {
+  all: initial;
+  padding: 6px 12px !important;
+  background: #e3f2fd !important;
+  color: #1565c0 !important;
+  border: 1px solid #90caf9 !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-card-del {
+  all: initial;
+  padding: 0 5px !important;
+  font-size: 12px !important;
+  color: #c62828 !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.xhs-fmt-example-save {
+  all: initial;
+  display: block !important;
+  width: calc(100% - 36px) !important;
+  margin: 8px 18px 16px !important;
+  padding: 10px !important;
+  text-align: center !important;
+  background: #f5f5f5 !important;
+  color: #555 !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+/* --- 排版并生图弹窗 --- */
+.xhs-fmt-gen-modal-overlay {
+  all: initial;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0,0,0,0.5) !important;
+  z-index: 1000004 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-gen-modal {
+  background: #fff !important;
+  border-radius: 14px !important;
+  width: 92% !important;
+  max-width: 720px !important;
+  max-height: 85vh !important;
+  overflow: hidden !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.2) !important;
+}
+
+.xhs-fmt-gen-modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 14px 18px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #333 !important;
+}
+
+.xhs-fmt-gen-modal-body {
+  padding: 14px 18px 18px !important;
+  overflow-y: auto !important;
+  max-height: calc(85vh - 56px) !important;
+}
+
+.xhs-fmt-cover-styles,
+.xhs-fmt-ai-styles {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+}
+
+.xhs-fmt-ai-prompt-select {
+  width: 100% !important;
+  padding: 8px 10px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-ai-prompt {
+  width: 100% !important;
+  padding: 8px 10px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  resize: vertical !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+}
+
+.xhs-fmt-cover-sync-title {
+  margin-right: 6px !important;
 }
 
 /* --- 配色方案卡片 --- */
@@ -590,4 +1483,236 @@
 #xhs-fmt-pro-modal .xhs-fmt-pro-btn-close:hover {
   background: #f5f5f5 !important;
   color: #666 !important;
+}
+
+/* --- 固定顶部工具栏（找不到编辑器时） --- */
+#xhs-fmt-toolbar.xhs-fmt-toolbar-fixed {
+  position: fixed !important;
+  top: 12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  max-width: calc(100vw - 24px) !important;
+  margin-bottom: 0 !important;
+}
+
+.xhs-fmt-ctx-banner {
+  all: initial;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  padding: 10px 16px !important;
+  background: #fff3e0 !important;
+  color: #e65100 !important;
+  font-size: 13px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+  box-sizing: border-box !important;
+}
+
+.xhs-fmt-ctx-banner .xhs-fmt-ctx-refresh {
+  all: initial;
+  padding: 6px 14px !important;
+  background: #ff6b81 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-ctx-banner .xhs-fmt-ctx-dismiss {
+  all: initial;
+  padding: 4px 8px !important;
+  background: transparent !important;
+  color: #999 !important;
+  border: none !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-restore-pill {
+  all: initial;
+  position: fixed !important;
+  right: 16px !important;
+  bottom: 20px !important;
+  z-index: 2147483645 !important;
+  padding: 10px 16px !important;
+  background: linear-gradient(135deg, #ff6b81, #ff4757) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 24px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 16px rgba(255, 71, 87, 0.45) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  animation: xhsFmtPop 0.25s ease !important;
+}
+
+.xhs-fmt-restore-pill:hover {
+  transform: scale(1.05) !important;
+}
+
+#xhs-fmt-toolbar.xhs-fmt-toolbar-dock {
+  position: fixed !important;
+  bottom: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  max-width: calc(100vw - 24px) !important;
+  margin-bottom: 0 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* --- 排版结果弹窗 --- */
+.xhs-fmt-format-modal-overlay {
+  all: initial;
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  z-index: 2147483646 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-format-modal {
+  all: initial;
+  display: flex !important;
+  flex-direction: column !important;
+  width: min(560px, 100%) !important;
+  max-height: 85vh !important;
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
+  overflow: hidden !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.xhs-fmt-format-modal-header {
+  all: initial;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 16px !important;
+  border-bottom: 1px solid #eee !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-format-modal-status {
+  all: initial;
+  display: block !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-format-modal-status.ok {
+  background: #e8f5e9 !important;
+  color: #2e7d32 !important;
+}
+
+.xhs-fmt-format-modal-status.warn {
+  background: #fff3e0 !important;
+  color: #e65100 !important;
+}
+
+.xhs-fmt-format-modal-text {
+  all: initial;
+  display: block !important;
+  width: calc(100% - 32px) !important;
+  min-height: 200px !important;
+  max-height: 45vh !important;
+  margin: 0 16px !important;
+  padding: 12px !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  color: #333 !important;
+  resize: vertical !important;
+  overflow: auto !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  white-space: pre-wrap !important;
+}
+
+.xhs-fmt-format-modal-steps {
+  all: initial;
+  display: block !important;
+  padding: 10px 16px 0 !important;
+  font-size: 12px !important;
+  color: #666 !important;
+  line-height: 1.6 !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-format-modal-steps kbd {
+  all: initial;
+  display: inline-block !important;
+  padding: 1px 5px !important;
+  background: #f5f5f5 !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  font-family: monospace !important;
+}
+
+.xhs-fmt-format-modal-actions {
+  all: initial;
+  display: flex !important;
+  gap: 10px !important;
+  padding: 14px 16px 16px !important;
+  flex-wrap: wrap !important;
+}
+
+.xhs-fmt-format-copy-btn,
+.xhs-fmt-format-retry-btn {
+  all: initial;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 10px 18px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.xhs-fmt-format-copy-btn {
+  background: linear-gradient(135deg, #ff6b81, #ff8a65) !important;
+  color: #fff !important;
+  flex: 1 !important;
+}
+
+.xhs-fmt-format-retry-btn {
+  background: #f5f5f5 !important;
+  color: #555 !important;
+  border: 1px solid #ddd !important;
+}
+
+.xhs-fmt-panel-floating {
+  position: fixed !important;
+  top: 72px !important;
+  right: 16px !important;
+  z-index: 2147483645 !important;
+  max-height: calc(100vh - 90px) !important;
+  overflow: auto !important;
 }

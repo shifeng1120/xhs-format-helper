@@ -1,484 +1,440 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>小红书排版助手</title>
+  <title>小红书排版助手 Pro</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --ink: #211f2f;
+      --muted: #777184;
+      --line: rgba(42, 34, 55, 0.1);
+      --brand: #ff3f62;
+      --brand-2: #ff8b54;
+      --cream: #fff8ee;
+      --green: #1f9d66;
+      --blue: #316cff;
+      --shadow: 0 18px 45px rgba(67, 41, 54, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      width: 340px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #ffffff;
-      color: #333;
+      width: 380px;
+      margin: 0;
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% -8%, rgba(255, 139, 84, 0.35), transparent 34%),
+        radial-gradient(circle at 88% 8%, rgba(255, 63, 98, 0.28), transparent 38%),
+        linear-gradient(180deg, #fffdfa 0%, #fff4f1 100%);
       font-size: 14px;
     }
 
-    .header {
-      padding: 16px;
-      background: linear-gradient(135deg, #1976d2, #1565c0);
+    button, input {
+      font: inherit;
+    }
+
+    .shell {
+      padding: 14px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      border-radius: 24px;
       color: #fff;
-      text-align: center;
+      background:
+        linear-gradient(135deg, rgba(255, 63, 98, 0.98), rgba(255, 139, 84, 0.96)),
+        #ff4d6d;
+      box-shadow: var(--shadow);
     }
 
-    .header h1 {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 4px;
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -28px;
+      top: -34px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.18);
     }
 
-    .header p {
+    .eyebrow {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
       font-size: 12px;
-      opacity: 0.85;
+      font-weight: 700;
+      letter-spacing: 0.04em;
     }
 
-    .content {
-      padding: 16px;
+    .hero h1 {
+      position: relative;
+      z-index: 1;
+      margin: 14px 0 6px;
+      font-size: 23px;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
     }
 
-    .section {
-      margin-bottom: 16px;
-    }
-
-    .section-title {
+    .hero p {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      max-width: 280px;
+      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.88);
       font-size: 13px;
-      font-weight: 600;
-      color: #999;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
     }
 
-    .info-row {
+    .status-card {
+      margin-top: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 28px rgba(67, 41, 54, 0.08);
+    }
+
+    .status-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid #f0f0f0;
+      gap: 12px;
     }
 
-    .info-row:last-child {
-      border-bottom: none;
-    }
-
-    .info-label {
-      color: #666;
-    }
-
-    .info-value {
-      font-weight: 500;
-      color: #333;
-    }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .badge-free {
-      background: #e3f2fd;
-      color: #1976d2;
-    }
-
-    .badge-pro {
-      background: #fff3e0;
-      color: #e65100;
-    }
-
-    .badge-trial {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .badge-expired {
-      background: #ffebee;
-      color: #c62828;
-    }
-
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-align: center;
-      transition: all 0.15s ease;
-    }
-
-    .btn-primary {
-      background: #1976d2;
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: #1565c0;
-    }
-
-    .btn-secondary {
-      background: #f5f5f5;
-      color: #666;
-    }
-
-    .btn-secondary:hover {
-      background: #e8e8e8;
-    }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #e0e0e0;
-      color: #666;
-    }
-
-    .btn-outline:hover {
-      border-color: #1976d2;
-      color: #1976d2;
-    }
-
-    .btn-success {
-      background: #2e7d32;
-      color: #fff;
-    }
-
-    .btn-success:hover {
-      background: #1b5e20;
-    }
-
-    .pro-section {
-      background: #fff8e1;
-      border: 1px solid #ffe0b2;
-      border-radius: 10px;
-      padding: 14px;
-      text-align: center;
-      margin-bottom: 16px;
-    }
-
-    .pro-section h3 {
-      font-size: 16px;
-      margin-bottom: 6px;
-      color: #e65100;
-    }
-
-    .pro-section p {
+    .status-title {
       font-size: 12px;
-      color: #8d6e63;
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-
-    .price {
-      font-size: 28px;
-      font-weight: 800;
-      color: #e65100;
-      margin-bottom: 12px;
-    }
-
-    .price small {
-      font-size: 14px;
-      font-weight: 400;
-      color: #999;
-    }
-
-    .features {
-      list-style: none;
-      padding: 0;
-      margin-bottom: 12px;
-      text-align: left;
-    }
-
-    .features li {
-      padding: 4px 0;
-      font-size: 13px;
-      color: #555;
-    }
-
-    .features li::before {
-      content: "✓ ";
-      color: #4caf50;
-      font-weight: bold;
-    }
-
-    .input-group {
-      margin-bottom: 12px;
-    }
-
-    .input-group label {
-      display: block;
-      font-size: 12px;
-      color: #999;
+      color: var(--muted);
       margin-bottom: 4px;
     }
 
-    .input-group input {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 13px;
-      font-family: monospace;
-      outline: none;
+    .status-value {
+      font-size: 16px;
+      font-weight: 800;
     }
 
-    .input-group input:focus {
-      border-color: #1976d2;
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
-    .success-msg {
-      color: #2e7d32;
-      font-size: 13px;
+    .badge-free { color: #316cff; background: rgba(49, 108, 255, 0.1); }
+    .badge-trial { color: #1f9d66; background: rgba(31, 157, 102, 0.12); }
+    .badge-expired { color: #c92a43; background: rgba(255, 63, 98, 0.12); }
+    .badge-pro { color: #a05a00; background: rgba(255, 185, 72, 0.22); }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 10px 8px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid rgba(42, 34, 55, 0.07);
       text-align: center;
-      padding: 8px;
-      background: #e8f5e9;
-      border-radius: 6px;
-      margin-bottom: 12px;
     }
 
-    .error-msg {
-      color: #c62828;
-      font-size: 13px;
-      text-align: center;
-      padding: 8px;
-      background: #ffebee;
-      border-radius: 6px;
-      margin-bottom: 12px;
+    .metric strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 2px;
     }
 
-    .footer {
-      padding: 12px 16px;
-      border-top: 1px solid #f0f0f0;
-      text-align: center;
+    .metric span {
       font-size: 11px;
-      color: #bbb;
+      color: var(--muted);
     }
 
-    .footer a {
-      color: #999;
-      text-decoration: none;
+    .section {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid rgba(42, 34, 55, 0.08);
     }
 
-    .footer a:hover {
-      color: #1976d2;
+    .section h2 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .mini {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feature-list li {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      color: #3c3748;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .feature-list b {
+      color: var(--ink);
+    }
+
+    .actions {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 40px;
+      border: 0;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow: 0 10px 24px rgba(255, 63, 98, 0.28);
+    }
+
+    .btn-dark {
+      color: #fff;
+      background: #211f2f;
+      box-shadow: 0 10px 20px rgba(33, 31, 47, 0.18);
+    }
+
+    .btn-soft {
+      color: #3d3349;
+      background: #fff6f2;
+      border: 1px solid rgba(255, 63, 98, 0.16);
+    }
+
+    .btn-line {
+      color: var(--muted);
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .price-row {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 12px 0;
+      padding: 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fff8ee, #fff0f2);
+    }
+
+    .price {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 900;
+      color: var(--brand);
+    }
+
+    .price small {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .input-panel {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+    }
+
+    .input-panel.show {
+      display: block;
+    }
+
+    .input-panel label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .input-panel input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .input-panel input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(255, 63, 98, 0.08);
+    }
+
+    .inline-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    #activate-result {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    #activate-result.success-msg {
+      color: #0f7a4a;
+      background: rgba(31, 157, 102, 0.12);
+    }
+
+    #activate-result.error-msg {
+      color: #c92a43;
+      background: rgba(255, 63, 98, 0.12);
     }
 
     .hidden {
       display: none !important;
     }
 
-    .link {
-      color: #1976d2;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .link:hover {
-      text-decoration: underline;
-    }
-
-    /* --- 试用期倒计时横幅 --- */
-    .trial-banner {
-      background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-      border: 1px solid #a5d6a7;
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .trial-banner-icon {
-      font-size: 28px;
-      flex-shrink: 0;
-    }
-
-    .trial-banner-text {
-      flex: 1;
-    }
-
-    .trial-banner-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #2e7d32;
-    }
-
-    .trial-banner-desc {
-      font-size: 12px;
-      color: #558b2f;
-      margin-top: 2px;
-    }
-
-    .trial-banner-countdown {
-      font-size: 13px;
-      font-weight: 700;
-      color: #1b5e20;
-      background: rgba(255,255,255,0.6);
-      padding: 4px 10px;
-      border-radius: 6px;
-      flex-shrink: 0;
-    }
-
-    /* --- 试用过期横幅 --- */
-    .expired-banner {
-      background: linear-gradient(135deg, #ffebee, #ffcdd2);
-      border: 1px solid #ef9a9a;
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 16px;
+    .footer {
+      padding: 10px 2px 0;
       text-align: center;
-    }
-
-    .expired-banner-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #c62828;
-    }
-
-    .expired-banner-desc {
-      font-size: 12px;
-      color: #e53935;
-      margin-top: 4px;
-    }
-
-    /* --- 独立的激活码入口（更显眼） --- */
-    .activate-entry {
-      border: 1px dashed #90caf9;
-      border-radius: 10px;
-      padding: 10px 14px;
-      margin-bottom: 16px;
-      text-align: center;
-      background: #f5faff;
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-
-    .activate-entry:hover {
-      border-color: #1976d2;
-      background: #e3f2fd;
-    }
-
-    .activate-entry-text {
-      font-size: 14px;
-      font-weight: 600;
-      color: #1976d2;
-    }
-
-    .activate-entry-hint {
+      color: rgba(33, 31, 47, 0.42);
       font-size: 11px;
-      color: #90caf9;
-      margin-top: 2px;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>📝 小红书排版助手</h1>
-    <p>美化你的每一篇笔记</p>
-  </div>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Creator OS · v<span id="version">3.0.0</span></div>
+      <h1>让一篇普通笔记，像认真运营过。</h1>
+      <p>智能识别内容类型，自动套用爆款结构，顺手生成封面、图文卡片和话题标签。</p>
+    </section>
 
-  <div class="content">
-    <!-- 状态 -->
-    <div class="section">
-      <div class="info-row">
-        <span class="info-label">当前状态</span>
-        <span id="status-badge" class="badge badge-free">Free 版</span>
-      </div>
-      <div id="trial-info-row" class="info-row hidden">
-        <span class="info-label">试用剩余</span>
-        <span id="trial-remaining" class="info-value">3 天</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">排版使用次数</span>
-        <span id="format-count" class="info-value">0</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">版本</span>
-        <span id="version" class="info-value">1.1.0</span>
-      </div>
-    </div>
-
-    <!-- 试用期横幅（试用期内显示） -->
-    <div id="trial-banner" class="trial-banner hidden">
-      <div class="trial-banner-icon">🎁</div>
-      <div class="trial-banner-text">
-        <div class="trial-banner-title">🔥 全功能试用中</div>
-        <div class="trial-banner-desc">所有 Pro 功能已解锁，到期后自动降级</div>
-      </div>
-      <div class="trial-banner-countdown" id="trial-countdown">3 天</div>
-    </div>
-
-    <!-- 试用过期横幅 -->
-    <div id="expired-banner" class="expired-banner hidden">
-      <div class="expired-banner-title">⏰ 试用已结束</div>
-      <div class="expired-banner-desc">升级 Pro 终身版，继续使用全部高级功能</div>
-    </div>
-
-    <!-- Pro 已激活 -->
-    <div id="pro-activated-section" class="hidden">
-      <div class="pro-section" style="background:#e8f5e9;border-color:#c8e6c9;">
-        <h3 style="color:#2e7d32;">✅ Pro 已激活</h3>
-        <p>感谢你的支持！所有高级功能已解锁</p>
-        <div class="features">
-          <li>5 套专业排版模板</li>
-          <li>10 套配色方案</li>
-          <li>格式清理工具</li>
-          <li>自定义模板保存</li>
-          <li>话题标签管理</li>
+    <section class="status-card">
+      <div class="status-top">
+        <div>
+          <div class="status-title">当前权益</div>
+          <div class="status-value" id="status-title">Free 基础版</div>
         </div>
-        <button id="btn-deactivate-pro" class="btn btn-secondary">退出 Pro</button>
+        <span id="status-badge" class="badge badge-free">Free</span>
       </div>
-    </div>
-
-    <!-- Pro 升级（免费版 + 试用过期） -->
-    <div id="pro-upgrade-section">
-      <div class="pro-section">
-        <h3>⭐ 升级到 Pro 终身版</h3>
-        <p>解锁全部高级功能，让每篇笔记都颜值在线</p>
-        <div class="price">¥29.9 <small>一次付费，永久使用</small></div>
-        <ul class="features">
-          <li>5 套专业排版模板，一键套用</li>
-          <li>10 套配色方案，选中即用</li>
-          <li>格式清理，一键统一全文</li>
-          <li>自定义模板，保存你的专属风格</li>
-          <li>话题标签管理，快捷插入</li>
-        </ul>
-        <button id="btn-buy-pro" class="btn btn-primary">立即购买</button>
+      <div class="metrics">
+        <div class="metric">
+          <strong id="format-count">0</strong>
+          <span>排版次数</span>
+        </div>
+        <div class="metric">
+          <strong id="trial-remaining">--</strong>
+          <span>试用剩余</span>
+        </div>
+        <div class="metric">
+          <strong>12+</strong>
+          <span>爆款模板</span>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 已有激活码？入口（独立模块，更显眼） -->
-    <div class="activate-entry" id="btn-show-activate">
-      <div class="activate-entry-text">🔑 已有激活码？点击激活</div>
-      <div class="activate-entry-hint">如果你已经购买了 Pro，在这里输入激活码</div>
-    </div>
+    <section class="section">
+      <h2>今天可以怎么用 <span class="mini">推荐主路径</span></h2>
+      <ul class="feature-list">
+        <li><span>✨</span><span><b>一键排版</b>：选中文字或全文，自动生成钩子、分段、清单和 CTA。</span></li>
+        <li><span>🎨</span><span><b>爆款封面</b>：把标题变成 3:4 或 1:1 大字封面，提高点击欲望。</span></li>
+        <li><span>🖼️</span><span><b>图文卡片</b>：把长文拆成多张小红书图片，可下载后直接发布。</span></li>
+      </ul>
+      <div class="actions">
+        <button id="btn-open-editor" class="btn btn-primary">打开小红书发布页</button>
+        <button id="btn-contact" class="btn btn-line">反馈问题 / 提需求</button>
+      </div>
+    </section>
 
-    <!-- 激活码输入（默认隐藏） -->
-    <div id="activate-section" class="hidden">
-      <div class="input-group">
+    <section id="pro-activated-section" class="section hidden">
+      <h2>Pro 已激活 <span class="mini">所有能力已解锁</span></h2>
+      <ul class="feature-list">
+        <li><span>✅</span><span>排版模板、图文生成、AI 配图、封面、话题标签全部可用。</span></li>
+        <li><span>💡</span><span>建议在发布页选中正文后使用浮动按钮，最快。</span></li>
+      </ul>
+      <div class="actions">
+        <button id="btn-deactivate-pro" class="btn btn-soft">退出 Pro 状态</button>
+      </div>
+    </section>
+
+    <section id="pro-upgrade-section" class="section">
+      <h2>升级 Pro <span class="mini">终身买断</span></h2>
+      <div class="price-row">
+        <div>
+          <div class="price">¥29.9</div>
+          <small>一次购买，长期使用</small>
+        </div>
+        <small>适合创作者、运营、店主、求职博主</small>
+      </div>
+      <ul class="feature-list">
+        <li><span>🚀</span><span>智能模板推荐 + 快速排版，减少反复调格式。</span></li>
+        <li><span>📌</span><span>封面、图文卡片、标签一条链路完成。</span></li>
+        <li><span>🔒</span><span>本地运行，文案不经过自建服务器。</span></li>
+      </ul>
+      <div class="actions">
+        <button id="btn-buy-pro" class="btn btn-dark">立即购买 Pro</button>
+        <button id="btn-show-activate" class="btn btn-soft">已有激活码，点此激活</button>
+      </div>
+      <div id="activate-section" class="input-panel">
         <label for="license-input">输入激活码</label>
         <input type="text" id="license-input" placeholder="XHS-PRO-XXXX-XXXX-XX" autocomplete="off">
+        <div class="inline-actions">
+          <button id="btn-activate" class="btn btn-primary">激活 Pro</button>
+          <button id="btn-cancel-activate" class="btn btn-line">取消</button>
+        </div>
       </div>
-      <button id="btn-activate" class="btn btn-primary" style="margin-bottom:8px;">激活 Pro</button>
-      <button id="btn-cancel-activate" class="btn btn-outline">取消</button>
-    </div>
+      <div id="activate-result" class="hidden"></div>
+    </section>
 
-    <div id="activate-result" class="hidden"></div>
-
-    <!-- 快捷操作 -->
-    <div class="section" style="margin-top: 8px;">
-      <div class="section-title">快捷操作</div>
-      <button id="btn-open-editor" class="btn btn-outline" style="margin-bottom:6px;">📝 打开小红书编辑器</button>
-      <button id="btn-contact" class="btn btn-outline">💬 反馈问题</button>
-    </div>
-  </div>
-
-  <div class="footer">
-    Made with ❤️ | <a href="#" id="link-privacy">隐私政策</a>
-  </div>
+    <div class="footer">Made for creators who care about taste and speed.</div>
+  </main>
 
   <script src="popup.js"></script>
 </body>
