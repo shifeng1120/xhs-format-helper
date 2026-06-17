@@ -1,0 +1,5 @@
+[agent] task failed: Error: Cannot find Xiaohongshu title field. 请先在 Local Agent 打开的 Chrome 窗口里登录小红书创作者中心，并确认已经进入发布页面。 selector=input[placeholder*="标题"], textarea[placeholder*="标题"] title=小红书创作服务平台 url=https://creator.xiaohongshu.com/login?source=&redirectReason=401&lastUrl=%252Fpublish%252Fpublish
+    at missingPublishFormError (file:///D:/programs/git-hub/xhs-format-helper/local-agent/src/xhs-publisher.js:10:10)
+    at fillFirstAvailable (file:///D:/programs/git-hub/xhs-format-helper/local-agent/src/xhs-publisher.js:22:11)
+    at async publishXhsNote (file:///D:/programs/git-hub/xhs-format-helper/local-agent/src/xhs-publisher.js:53:3)
+    at async WebSocket.<anonymous> (file:///D:/programs/git-hub/xhs-format-helper/local-agent/src/agent.js:26:22)

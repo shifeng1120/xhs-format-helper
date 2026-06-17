@@ -1,0 +1,16 @@
+{
+  "name": "xhs-hermes-local-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local Agent for Hermes-controlled Xiaohongshu browser publishing.",
+  "scripts": {
+    "start": "node src/index.js",
+    "demo:gateway": "node examples/gateway-server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "playwright": "^1.44.0",
+    "ws": "^8.17.0"
+  }
+}

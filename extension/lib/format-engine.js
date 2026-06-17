@@ -591,7 +591,9 @@
     const stillOnlyCta = isOnlyCtaAppended(finalText, sourceText.trim(), formatted, ctaText);
     const headMark = formatted.slice(0, Math.min(24, formatted.length)).trim();
     const hasFormattedHead = headMark.length > 4 && finalText.includes(headMark.slice(0, 12));
+    const lengthLooksReplaced = finalText.length <= Math.max(formatted.length * 1.2, formatted.length + 30);
     const success = ok && !stillOnlyCta && hasFormattedHead &&
+      lengthLooksReplaced &&
       finalText.length >= Math.min(formatted.length * 0.55, sourceText.trim().length * 0.8);
 
     return {

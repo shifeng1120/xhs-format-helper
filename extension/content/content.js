@@ -15,6 +15,8 @@
     LAST_IMAGE_LAYOUT_KEY: 'xhs_fmt_last_image_layout',
     LAST_IMAGE_SIZE_KEY: 'xhs_fmt_last_image_size',
     CUSTOM_BG_KEY: 'xhs_fmt_custom_bg',
+    DEFAULT_TOOLBAR_COLLAPSED_KEY: 'xhs_fmt_toolbar_collapsed',
+    DRAFT_CONTEXT_KEY: 'xhs_fmt_draft_context',
     TOOLBAR_ID: 'xhs-fmt-toolbar',
     RESTORE_BTN_ID: 'xhs-fmt-restore-pill',
     FLOAT_BTN_ID: 'xhs-fmt-float-btn',
@@ -31,7 +33,7 @@
     formatCapture: null,
     floatHideTimer: null,
     lastUrl: location.href,
-    toolbarCollapsed: false,
+    toolbarCollapsed: true,
   };
 
   function isPublishPage() {
@@ -53,13 +55,8 @@
   }
 
   function attachPanel(panel, editor) {
-    const anchor = editor?.parentNode;
-    if (anchor) {
-      anchor.insertBefore(panel, editor.nextSibling);
-    } else {
-      panel.classList.add('xhs-fmt-panel-floating');
-      document.body.appendChild(panel);
-    }
+    panel.classList.add('xhs-fmt-panel-floating');
+    document.body.appendChild(panel);
     state.activePanel = panel;
   }
 
@@ -91,8 +88,8 @@
       pill = document.createElement('button');
       pill.id = CONFIG.RESTORE_BTN_ID;
       pill.className = 'xhs-fmt-restore-pill';
-      pill.textContent = '✨ 排版助手';
-      pill.title = '点击恢复工具栏';
+      pill.textContent = '✨ 红薯创作助手';
+      pill.title = '展开创作工具';
       pill.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -111,7 +108,8 @@
     state.toolbarCollapsed = true;
     removeExtensionUI();
     showRestorePill();
-    showTooltip('工具栏已收起，点右下角「✨ 排版助手」恢复');
+    saveLocalStorage(CONFIG.DEFAULT_TOOLBAR_COLLAPSED_KEY, true);
+    showTooltip('工具栏已收起，点右下角「✨ 红薯创作助手」展开');
   }
 
   function restoreToolbar() {
@@ -126,11 +124,14 @@
     sessionStorage.removeItem('xhs_fmt_toolbar_hidden');
 
     if (!shouldShowExtensionUI()) {
-      state.toolbarCollapsed = false;
+      state.toolbarCollapsed = true;
       removeExtensionUI();
       hideRestorePill();
       return;
     }
+
+    saveDraftContextFromEditor();
+    ensurePublishCaptionHelper();
 
     if (state.toolbarCollapsed) {
       document.getElementById(CONFIG.TOOLBAR_ID)?.remove();
@@ -244,7 +245,7 @@
     bar.id = 'xhs-fmt-ctx-banner';
     bar.className = 'xhs-fmt-ctx-banner';
     bar.innerHTML = `
-      <span>排版助手已更新，请刷新页面后继续使用</span>
+        <span>红薯创作助手已更新，请刷新页面后继续使用</span>
       <button type="button" class="xhs-fmt-ctx-refresh">刷新页面</button>
       <button type="button" class="xhs-fmt-ctx-dismiss">✕</button>
     `;
@@ -290,6 +291,10 @@
     }
   }
 
+  async function loadToolbarPreference() {
+    state.toolbarCollapsed = true;
+  }
+
   // ---------- 编辑器检测 ----------
 
   function findEditor() {
@@ -317,14 +322,8 @@
       captureBeforeFormat();
     });
 
-    const editor = findEditor();
-    const parent = editor?.parentNode;
-    if (parent) {
-      parent.insertBefore(toolbar, editor);
-    } else {
-      toolbar.classList.add('xhs-fmt-toolbar-dock');
-      document.body.appendChild(toolbar);
-    }
+    toolbar.classList.add('xhs-fmt-toolbar-dock');
+    document.body.appendChild(toolbar);
     state.toolbarInjected = true;
   }
 
@@ -339,67 +338,88 @@
     const toolbar = document.createElement('div');
     toolbar.id = CONFIG.TOOLBAR_ID;
 
+    const mainGroup = createToolbarGroup('xhs-fmt-toolbar-main', '主要操作');
+    const styleGroup = createToolbarGroup('xhs-fmt-toolbar-style', '样式设置');
+    const toolsGroup = createToolbarGroup('xhs-fmt-toolbar-tools', '创作工具');
+    const mainControls = mainGroup.querySelector('.xhs-fmt-toolbar-controls');
+    const styleControls = styleGroup.querySelector('.xhs-fmt-toolbar-controls');
+    const toolControls = toolsGroup.querySelector('.xhs-fmt-toolbar-controls');
+
     // 核心：一键排版（最醒目）
     if (state.isPro) {
-      toolbar.appendChild(createPrimaryBtn('✨ 一键排版', '选中文字或全文智能排版', () => {
+      mainControls.appendChild(createPrimaryBtn('✨ 一键排版', '选中文字或全文智能排版', () => {
         openTemplatePanel();
       }));
-      toolbar.appendChild(createBtnText('⚡ 快速排版', '用上次模板一键排版', () => {
+      mainControls.appendChild(createBtnText('⚡ 快速排版', '用上次模板一键排版', () => {
         quickFormat();
       }));
-      toolbar.appendChild(createPrimaryBtn('🚀 排版并生图', '排版+封面+内容图，完整图文包', () => {
+      mainControls.appendChild(createPrimaryBtn('🚀 排版并生图', '排版+封面+内容图，完整图文包', () => {
         formatAndGenerateImages();
       }, 'alt'));
-      toolbar.appendChild(createDivider());
     } else if (state.proSource === 'expired') {
-      toolbar.appendChild(createLockedBtn('✨ 一键排版', '试用已过期'));
+      mainControls.appendChild(createLockedBtn('✨ 一键排版', '试用已过期'));
     }
 
     // 基础格式
-    toolbar.appendChild(createLabel('字号'));
-    toolbar.appendChild(createSelect(
+    styleControls.appendChild(createLabel('字号'));
+    styleControls.appendChild(createSelect(
       ['14', '15', '16', '17', '18', '20'],
       ['14', '15', '16', '17', '18', '20'],
       '16',
       (val) => execFormat('fontSize', val)
     ));
-    toolbar.appendChild(createDivider());
+    styleControls.appendChild(createDivider());
 
-    toolbar.appendChild(createLabel('行距'));
-    toolbar.appendChild(createSelect(
+    styleControls.appendChild(createLabel('行距'));
+    styleControls.appendChild(createSelect(
       ['1.0', '1.5', '1.75', '2.0', '2.5'],
       ['1.0', '1.5', '1.75', '2.0', '2.5'],
       '1.75',
       (val) => applyLineHeight(val)
     ));
-    toolbar.appendChild(createDivider());
+    styleControls.appendChild(createDivider());
 
-    toolbar.appendChild(createToggleBtn('B', '加粗', () => execFormat('bold')));
-    toolbar.appendChild(createToggleBtn('I', '斜体', () => execFormat('italic')));
-    toolbar.appendChild(createDivider());
+    styleControls.appendChild(createToggleBtn('B', '加粗', () => execFormat('bold')));
+    styleControls.appendChild(createToggleBtn('I', '斜体', () => execFormat('italic')));
+    styleControls.appendChild(createDivider());
 
-    toolbar.appendChild(createBtn('左', '左对齐', () => execFormat('justifyLeft')));
-    toolbar.appendChild(createBtn('中', '居中', () => execFormat('justifyCenter')));
-    toolbar.appendChild(createDivider());
+    styleControls.appendChild(createBtn('左', '左对齐', () => execFormat('justifyLeft')));
+    styleControls.appendChild(createBtn('中', '居中', () => execFormat('justifyCenter')));
 
     if (state.isPro) {
-      toolbar.appendChild(createBtnText('🎨 爆款封面', '大字封面图，提升点击率', () => openCoverGeneratorPanel()));
-      toolbar.appendChild(createBtnText('🖼️ 生成图片', '文案转图文卡片，可下载发布', () => openImageGeneratorPanel()));
-      toolbar.appendChild(createBtnText('🤖 AI配图', '智能生成氛围配图', () => openAiImagePanel()));
-      toolbar.appendChild(createBtnText('📋 模板', '选择排版模板', () => openTemplatePanel()));
-      toolbar.appendChild(createBtnText('🧹 清理', '清理多余空行', () => runFormatCleaner()));
-      toolbar.appendChild(createBtnText('🏷️ 标签', '插入话题标签', () => openHashtagPanel()));
+      toolControls.appendChild(createBtnText('🎨 爆款封面', '大字封面图，提升点击率', () => openCoverGeneratorPanel()));
+      toolControls.appendChild(createBtnText('✍️ 仿写', '参考爆款结构，原创重写小红书文案', () => openRewritePanel()));
+      toolControls.appendChild(createBtnText('🖼️ 生成图片', '文案转图文卡片，可下载发布', () => openImageGeneratorPanel()));
+      toolControls.appendChild(createBtnText('📋 模板', '选择排版模板', () => openTemplatePanel()));
+      toolControls.appendChild(createBtnText('📱 预览', '手机端阅读预览', () => openMobilePreviewPanel()));
+      const moreTools = document.createElement('span');
+      moreTools.className = 'xhs-fmt-more-tools';
+      moreTools.appendChild(createBtnText('🤖 AI配图', '智能生成氛围配图', () => openAiImagePanel()));
+      moreTools.appendChild(createBtnText('👤 风格', '保存账号人设、语气、标签和 CTA', () => openAccountStylePanel()));
+      moreTools.appendChild(createBtnText('🗂️ 草稿', '本地保存和恢复历史草稿', () => openLocalDraftsPanel()));
+      moreTools.appendChild(createBtnText('🧹 清理', '清理多余空行', () => runFormatCleaner()));
+      moreTools.appendChild(createBtnText('🏷️ 标签', '插入话题标签', () => openHashtagPanel()));
+      const moreBtn = createBtnText('更多工具', '展开 AI 配图、账号风格、草稿、清理和标签', () => {
+        const showing = moreTools.classList.toggle('show');
+        moreBtn.textContent = showing ? '收起工具' : '更多工具';
+        moreBtn.title = showing ? '收起低频工具' : '展开 AI 配图、账号风格、草稿、清理和标签';
+      });
+      moreBtn.classList.add('xhs-fmt-btn-more-toggle');
+      toolControls.appendChild(moreBtn);
+      toolControls.appendChild(moreTools);
     } else if (state.proSource === 'expired') {
-      toolbar.appendChild(createLockedBtn('🎨 爆款封面', '试用已过期'));
-      toolbar.appendChild(createLockedBtn('🖼️ 生成图片', '试用已过期'));
-      toolbar.appendChild(createLockedBtn('🤖 AI配图', '试用已过期'));
-      toolbar.appendChild(createLockedBtn('📋 模板', '试用已过期'));
-      toolbar.appendChild(createLockedBtn('🧹 清理', '试用已过期'));
-      toolbar.appendChild(createLockedBtn('🏷️ 标签', '试用已过期'));
+      toolControls.appendChild(createLockedBtn('🎨 爆款封面', '试用已过期'));
+      toolControls.appendChild(createLockedBtn('✍️ 仿写', '试用已过期'));
+      toolControls.appendChild(createLockedBtn('🖼️ 生成图片', '试用已过期'));
+      toolControls.appendChild(createLockedBtn('📋 模板', '试用已过期'));
+      toolControls.appendChild(createLockedBtn('📱 预览', '试用已过期'));
     }
 
+    if (mainControls.children.length) toolbar.appendChild(mainGroup);
+    toolbar.appendChild(styleGroup);
+    if (toolControls.children.length) toolbar.appendChild(toolsGroup);
+
     if (state.proSource !== 'activation') {
-      toolbar.appendChild(createDivider());
       const upgradeBtn = document.createElement('button');
       upgradeBtn.className = 'xhs-fmt-btn-text xhs-fmt-btn-upgrade';
       upgradeBtn.textContent = state.proSource === 'trial' ? '⭐ 试用中·升级' : '⭐ 升级Pro';
@@ -412,7 +432,7 @@
     closeBtn.className = 'xhs-fmt-toolbar-close';
     closeBtn.type = 'button';
     closeBtn.textContent = '✕';
-    closeBtn.title = '收起工具栏（点右下角「排版助手」可恢复）';
+    closeBtn.title = '收起工具栏（点右下角「红薯创作助手」可展开）';
     closeBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -424,6 +444,22 @@
   }
 
   // ---------- DOM 辅助 ----------
+
+  function createToolbarGroup(className, label) {
+    const group = document.createElement('div');
+    group.className = `xhs-fmt-toolbar-group ${className}`;
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'xhs-fmt-toolbar-group-label';
+    labelEl.textContent = label;
+    group.appendChild(labelEl);
+
+    const controls = document.createElement('div');
+    controls.className = 'xhs-fmt-toolbar-controls';
+    group.appendChild(controls);
+
+    return group;
+  }
 
   function createLabel(text) {
     const span = document.createElement('span');
@@ -668,7 +704,9 @@
     const layoutId = (await loadStorage(CONFIG.LAST_IMAGE_LAYOUT_KEY)) || 'interview';
     const sizeKey = (await loadStorage(CONFIG.LAST_IMAGE_SIZE_KEY)) || 'portrait';
     const customBg = await loadLocalStorage(CONFIG.CUSTOM_BG_KEY);
-    const { title, subtitle } = extractTitleSubtitle(text);
+    const extracted = extractTitleSubtitle(text);
+    const title = toCoverTitleText(getCurrentNoteTitle()) || toCoverTitleText(extracted.title);
+    const subtitle = sanitizeCoverText(extracted.subtitle && extracted.subtitle !== title ? extracted.subtitle : '');
 
     syncTitleToXhs(title);
 
@@ -707,6 +745,433 @@
   }
 
   // ---------- 模板选择面板 ----------
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function currentEditorText(editor) {
+    const target = editor || findEditor();
+    return (target ? window.XhsEditorUtils?.getEditorTextRobust(target) : '') || '';
+  }
+
+  function isVisibleElement(el) {
+    if (!el || !el.isConnected) return false;
+    const rect = el.getBoundingClientRect();
+    const style = window.getComputedStyle(el);
+    return rect.width > 1 && rect.height > 1 && style.display !== 'none' && style.visibility !== 'hidden';
+  }
+
+  function saveDraftContextFromEditor() {
+    const titleEl = document.querySelector('textarea[placeholder="输入标题"]');
+    if (!titleEl) return;
+    const editor = findEditor();
+    const title = (titleEl?.value || '').trim();
+    const text = currentEditorText(editor).trim();
+    if (!title && text.length < 40) return;
+    try {
+      sessionStorage.setItem(CONFIG.DRAFT_CONTEXT_KEY, JSON.stringify({
+        title,
+        text,
+        savedAt: Date.now(),
+      }));
+    } catch (e) { /* ignore */ }
+  }
+
+  function loadDraftContext() {
+    try {
+      const raw = sessionStorage.getItem(CONFIG.DRAFT_CONTEXT_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed?.text || Date.now() - (parsed.savedAt || 0) > 6 * 60 * 60 * 1000) return null;
+      return parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function buildSafePublishCaption(ctx) {
+    const rawLines = String(ctx?.text || '')
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const tags = rawLines
+      .filter((line) => line.startsWith('#'))
+      .join(' ')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 8);
+    const bodyLines = rawLines
+      .filter((line) => !line.startsWith('#'))
+      .filter((line) => line.length > 8)
+      .slice(0, 4);
+    const titleLine = ctx?.title ? `这篇记录的是：${ctx.title}` : '这篇记录的是一次真实的内容创作复盘。';
+    const summary = bodyLines.length
+      ? bodyLines.map((line) => line.length > 62 ? `${line.slice(0, 62)}...` : line).join('\n')
+      : '把零散想法整理成更清楚的表达，让内容创作少一点阻力。';
+    return [
+      titleLine,
+      '',
+      summary,
+      '',
+      '我会继续边用边改，把它打磨成真正顺手的创作工作流。',
+      '',
+      tags.length ? tags.join(' ') : '#内容创作 #创作工具 #效率工具 #产品设计',
+    ].join('\n');
+  }
+
+  function inlineRichTextHtml(line) {
+    return escapeHtml(line).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  function findPublishCaptionEditor() {
+    const titleInput = document.querySelector('input[placeholder="填写标题会有更多赞哦"]');
+    if (!titleInput || !isVisibleElement(titleInput)) return null;
+    const candidates = [...document.querySelectorAll('[contenteditable="true"], .ProseMirror, .tiptap')]
+      .filter((el) => isVisibleElement(el) && !el.closest('#' + CONFIG.TOOLBAR_ID) && !el.closest('.xhs-fmt-caption-helper'));
+    return candidates[0] || null;
+  }
+
+  function ensurePublishCaptionHelper() {
+    const existing = document.querySelector('.xhs-fmt-caption-helper');
+    const editor = findPublishCaptionEditor();
+    const current = currentEditorText(editor).trim();
+    const ctx = loadDraftContext();
+    if (!editor || !ctx || current.length > 10) {
+      existing?.remove();
+      return;
+    }
+    if (existing) return;
+    const helper = document.createElement('div');
+    helper.className = 'xhs-fmt-caption-helper';
+    helper.innerHTML = `
+      <strong>说明区为空</strong>
+      <span>用原文生成一段安全说明和标签</span>
+      <button type="button">补说明</button>
+    `;
+    helper.querySelector('button').addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = findPublishCaptionEditor();
+      const caption = buildSafePublishCaption(loadDraftContext());
+      const ok = await window.XhsEditorUtils?.replaceEditorContent(target, caption, { replaceAll: true });
+      showTooltip(ok ? '已补充发布说明' : '自动写入失败，请手动复制说明');
+      if (ok) helper.remove();
+    });
+    document.body.appendChild(helper);
+  }
+
+  function renderPreviewHtml(text) {
+    const lines = String(text || '').split(/\n+/).map((line) => line.trim()).filter(Boolean);
+    if (!lines.length) return '<p class="xhs-fmt-phone-empty">正文为空，先在发布页输入文案。</p>';
+    return lines.map((line, index) => {
+      const cls = index === 0 || line.length <= 22 ? 'xhs-fmt-phone-title' : 'xhs-fmt-phone-line';
+      return `<p class="${cls}">${inlineRichTextHtml(line)}</p>`;
+    }).join('');
+  }
+
+  async function saveCurrentDraft(source) {
+    const workspace = window.XhsWorkspace;
+    const editor = findEditor();
+    const text = currentEditorText(editor);
+    if (!workspace) {
+      showTooltip('❌ 本地工作区模块加载失败');
+      return null;
+    }
+    if (!text.trim()) {
+      showTooltip('⚠️ 正文为空，暂时没有可保存的草稿');
+      return null;
+    }
+    const draft = await workspace.saveDraft({ text, source: source || 'manual-save' });
+    if (draft) showTooltip('✅ 已保存到本地草稿');
+    return draft;
+  }
+
+  async function openMobilePreviewPanel() {
+    if (!state.isPro) { showProModal(); return; }
+    closeActivePanel();
+    if (!isPublishPage()) { showTooltip(editorNotFoundHint()); return; }
+
+    const editor = await ensureEditor(3000);
+    const text = currentEditorText(editor);
+    const panel = document.createElement('div');
+    panel.className = 'xhs-fmt-panel xhs-fmt-panel-large';
+    panel.id = 'xhs-fmt-panel-' + uid();
+    panel.innerHTML = `
+      <div class="xhs-fmt-panel-header">
+        <span>📱 手机端阅读预览</span><span class="xhs-fmt-panel-close">✕</span>
+      </div>
+      <div class="xhs-fmt-panel-hint">模拟小红书手机阅读宽度，帮你检查段落是否太长、标题是否醒目。</div>
+      <div class="xhs-fmt-phone-preview">
+        <div class="xhs-fmt-phone-top"></div>
+        <div class="xhs-fmt-phone-screen">${renderPreviewHtml(text)}</div>
+      </div>
+      <div class="xhs-fmt-panel-actions">
+        <button class="xhs-fmt-panel-btn xhs-fmt-save-draft">保存当前草稿</button>
+        <button class="xhs-fmt-panel-btn xhs-fmt-refresh-preview">刷新预览</button>
+      </div>
+    `;
+    panel.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
+    panel.querySelector('.xhs-fmt-save-draft').addEventListener('click', () => saveCurrentDraft('mobile-preview'));
+    panel.querySelector('.xhs-fmt-refresh-preview').addEventListener('click', () => {
+      panel.querySelector('.xhs-fmt-phone-screen').innerHTML = renderPreviewHtml(currentEditorText(editor));
+      showTooltip('✅ 预览已刷新');
+    });
+    attachPanel(panel, editor);
+  }
+
+  async function openAccountStylePanel() {
+    if (!state.isPro) { showProModal(); return; }
+    closeActivePanel();
+    const workspace = window.XhsWorkspace;
+    if (!workspace) { showTooltip('❌ 本地工作区模块加载失败'); return; }
+
+    const editor = await ensureEditor(2000);
+    const styles = await workspace.getStyles();
+    const active = styles[0] || {};
+    const panel = document.createElement('div');
+    panel.className = 'xhs-fmt-panel xhs-fmt-panel-large';
+    panel.id = 'xhs-fmt-panel-' + uid();
+    panel.innerHTML = `
+      <div class="xhs-fmt-panel-header">
+        <span>👤 账号风格库</span><span class="xhs-fmt-panel-close">✕</span>
+      </div>
+      <div class="xhs-fmt-panel-hint">把账号人设、语气、固定 CTA 和常用标签保存下来，之后每篇都能沿用同一套表达。</div>
+      <div class="xhs-fmt-style-form">
+        <label>风格名称<input data-field="name" value="${escapeHtml(active.name || '')}" placeholder="例如：职场干货号"></label>
+        <label>账号人设<textarea data-field="persona" placeholder="例如：有 5 年经验的运营朋友，讲人话，不端着">${escapeHtml(active.persona || '')}</textarea></label>
+        <label>表达语气<textarea data-field="tone" placeholder="例如：直接、真诚、少营销，多给具体步骤">${escapeHtml(active.tone || '')}</textarea></label>
+        <label>固定 CTA<input data-field="cta" value="${escapeHtml(active.cta || '')}" placeholder="例如：先收藏，照着做一遍"></label>
+        <label>常用标签<input data-field="tags" value="${escapeHtml(active.tags || '')}" placeholder="#小红书运营 #干货分享"></label>
+      </div>
+      <div class="xhs-fmt-style-preview">${escapeHtml(workspace.buildStylePrompt(active))}</div>
+      <div class="xhs-fmt-panel-actions">
+        <button class="xhs-fmt-panel-btn xhs-fmt-save-style">保存风格</button>
+        <button class="xhs-fmt-panel-btn xhs-fmt-copy-style">复制风格提示</button>
+      </div>
+    `;
+
+    const collect = () => {
+      const data = { id: active.id };
+      panel.querySelectorAll('[data-field]').forEach((el) => {
+        data[el.dataset.field] = el.value;
+      });
+      return data;
+    };
+    const refreshStylePreview = () => {
+      panel.querySelector('.xhs-fmt-style-preview').textContent = workspace.buildStylePrompt(collect());
+    };
+    panel.querySelectorAll('[data-field]').forEach((el) => el.addEventListener('input', refreshStylePreview));
+    panel.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
+    panel.querySelector('.xhs-fmt-save-style').addEventListener('click', async () => {
+      await workspace.saveStyle(collect());
+      showTooltip('✅ 账号风格已保存到本地');
+    });
+    panel.querySelector('.xhs-fmt-copy-style').addEventListener('click', async () => {
+      const text = workspace.buildStylePrompt(collect());
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        // Clipboard may be blocked on some pages; preview text still remains visible.
+      }
+      showTooltip('✅ 风格提示已复制');
+    });
+    attachPanel(panel, editor);
+  }
+
+  async function openLocalDraftsPanel() {
+    if (!state.isPro) { showProModal(); return; }
+    closeActivePanel();
+    const workspace = window.XhsWorkspace;
+    if (!workspace) { showTooltip('❌ 本地工作区模块加载失败'); return; }
+
+    const editor = await ensureEditor(2000);
+    const panel = document.createElement('div');
+    panel.className = 'xhs-fmt-panel xhs-fmt-panel-large';
+    panel.id = 'xhs-fmt-panel-' + uid();
+
+    const renderDrafts = async () => {
+      const drafts = await workspace.getDrafts();
+      const body = panel.querySelector('.xhs-fmt-draft-list');
+      body.innerHTML = drafts.length ? drafts.map((draft) => `
+        <div class="xhs-fmt-draft-item" data-id="${escapeHtml(draft.id)}">
+          <div>
+            <strong>${escapeHtml(draft.title)}</strong>
+            <span>${draft.wordCount || 0} 字 · ${escapeHtml((draft.updatedAt || '').slice(0, 16).replace('T', ' '))}</span>
+          </div>
+          <div class="xhs-fmt-draft-actions">
+            <button data-action="restore">恢复</button>
+            <button data-action="delete">删除</button>
+          </div>
+        </div>
+      `).join('') : '<div class="xhs-fmt-empty-state">还没有本地草稿。点击“保存当前正文”，先把正在写的内容留住。</div>';
+    };
+
+    panel.innerHTML = `
+      <div class="xhs-fmt-panel-header">
+        <span>🗂️ 本地历史草稿</span><span class="xhs-fmt-panel-close">✕</span>
+      </div>
+      <div class="xhs-fmt-panel-hint">草稿保存在本机浏览器，不上传服务器。最多保留最近 20 条。</div>
+      <div class="xhs-fmt-panel-actions">
+        <button class="xhs-fmt-panel-btn xhs-fmt-save-current">保存当前正文</button>
+        <button class="xhs-fmt-panel-btn xhs-fmt-refresh-drafts">刷新列表</button>
+      </div>
+      <div class="xhs-fmt-draft-list"></div>
+    `;
+
+    panel.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
+    panel.querySelector('.xhs-fmt-save-current').addEventListener('click', async () => {
+      await saveCurrentDraft('draft-panel');
+      await renderDrafts();
+    });
+    panel.querySelector('.xhs-fmt-refresh-drafts').addEventListener('click', renderDrafts);
+    panel.querySelector('.xhs-fmt-draft-list').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      const item = e.target.closest('.xhs-fmt-draft-item');
+      if (!btn || !item) return;
+      const id = item.dataset.id;
+      const drafts = await workspace.getDrafts();
+      const draft = drafts.find((entry) => entry.id === id);
+      if (btn.dataset.action === 'delete') {
+        await workspace.deleteDraft(id);
+        await renderDrafts();
+        showTooltip('已删除本地草稿');
+        return;
+      }
+      if (draft) {
+        const target = await ensureEditor(3000);
+        const ok = await window.XhsEditorUtils?.replaceEditorContent(target, draft.text, { replaceAll: true });
+        showTooltip(ok ? '✅ 草稿已恢复到编辑器' : '⚠️ 自动恢复失败，请手动复制草稿');
+      }
+    });
+    await renderDrafts();
+    attachPanel(panel, editor);
+  }
+
+  function formatRewriteResult(result) {
+    const title = Array.isArray(result?.titles) && result.titles[0] ? result.titles[0] : '';
+    const body = result?.body || '';
+    const tags = Array.isArray(result?.tags) ? result.tags.join(' ') : '';
+    return [title, body, tags].filter(Boolean).join('\n\n');
+  }
+
+  async function applyRewriteResult(result) {
+    const text = formatRewriteResult(result);
+    if (!text.trim()) {
+      showTooltip('⚠️ 没有可写入的仿写结果');
+      return false;
+    }
+    const editor = await ensureEditor(3000);
+    const ok = await window.XhsEditorUtils?.replaceEditorContent(editor, text, { replaceAll: true });
+    if (ok) await saveCurrentDraft('ai-rewrite');
+    showTooltip(ok ? '✅ 仿写稿已写入发布页' : '⚠️ 自动写入失败，请复制后手动粘贴');
+    return ok;
+  }
+
+  async function saveNewApiSettings(panel) {
+    const client = window.XhsNewApiClient;
+    if (!client) return null;
+    const settings = await client.saveSettings({
+      baseUrl: panel.querySelector('.xhs-fmt-newapi-url').value,
+      apiKey: panel.querySelector('.xhs-fmt-newapi-key').value,
+      model: panel.querySelector('.xhs-fmt-newapi-model').value,
+    });
+    showTooltip('✅ NewAPI 配置已保存到本地');
+    return settings;
+  }
+
+  async function openRewritePanel() {
+    if (!state.isPro) { showProModal(); return; }
+    closeActivePanel();
+    if (!isPublishPage()) { showTooltip(editorNotFoundHint()); return; }
+
+    const client = window.XhsNewApiClient;
+    const workspace = window.XhsWorkspace;
+    if (!client) { showTooltip('❌ NewAPI 客户端加载失败'); return; }
+
+    const editor = await ensureEditor(3000);
+    const sourceText = currentEditorText(editor);
+    const settings = await client.getSettings();
+    const styles = workspace ? await workspace.getStyles() : [];
+    const activeStyle = styles[0] ? workspace.buildStylePrompt(styles[0]) : '';
+    let latestResult = null;
+
+    const panel = document.createElement('div');
+    panel.className = 'xhs-fmt-panel xhs-fmt-panel-large';
+    panel.id = 'xhs-fmt-panel-' + uid();
+    panel.innerHTML = `
+      <div class="xhs-fmt-panel-header">
+        <span>✍️ 爆款结构仿写</span><span class="xhs-fmt-panel-close">✕</span>
+      </div>
+      <div class="xhs-fmt-panel-hint">粘贴对标笔记或你的原始素材，经 NewAPI 做结构参考和原创重写。服务器只处理文本，不上传图片。</div>
+      <div class="xhs-fmt-rewrite-grid">
+        <label>NewAPI 地址<input class="xhs-fmt-newapi-url" placeholder="https://your-newapi.example.com" value="${escapeHtml(settings.baseUrl || '')}"></label>
+        <label>模型名<input class="xhs-fmt-newapi-model" placeholder="gpt-4o-mini" value="${escapeHtml(settings.model || client.DEFAULT_MODEL)}"></label>
+        <label class="xhs-fmt-rewrite-wide">Token<input class="xhs-fmt-newapi-key" type="password" placeholder="sk-..." value="${escapeHtml(settings.apiKey || '')}"></label>
+        <label>赛道<input class="xhs-fmt-rewrite-industry" placeholder="例如：职场 / 探店 / 美妆 / 店铺获客"></label>
+        <label>目标<select class="xhs-fmt-rewrite-goal">
+          <option>结构参考 + 原创重写</option>
+          <option>更像真人经验分享</option>
+          <option>更强种草转化</option>
+          <option>更适合收藏的干货清单</option>
+        </select></label>
+        <label class="xhs-fmt-rewrite-wide">参考素材 / 原始文案<textarea class="xhs-fmt-rewrite-source" placeholder="粘贴对标爆款笔记，或直接使用发布页当前正文">${escapeHtml(sourceText)}</textarea></label>
+      </div>
+      <div class="xhs-fmt-panel-actions">
+        <button class="xhs-fmt-panel-btn xhs-fmt-save-newapi">保存配置</button>
+        <button class="xhs-fmt-panel-btn xhs-fmt-run-rewrite">生成仿写稿</button>
+        <button class="xhs-fmt-panel-btn xhs-fmt-apply-rewrite">写入发布页</button>
+      </div>
+      <div class="xhs-fmt-rewrite-result">
+        <div class="xhs-fmt-empty-state">生成后会在这里展示标题、正文、标签、封面建议和风险提醒。</div>
+      </div>
+    `;
+
+    const renderResult = (result) => {
+      const titles = Array.isArray(result.titles) ? result.titles : [];
+      const hooks = Array.isArray(result.hooks) ? result.hooks : [];
+      const tags = Array.isArray(result.tags) ? result.tags : [];
+      const risks = Array.isArray(result.risks) ? result.risks : [];
+      panel.querySelector('.xhs-fmt-rewrite-result').innerHTML = `
+        <div class="xhs-fmt-rewrite-section"><strong>标题备选</strong>${titles.map((t) => `<p>${escapeHtml(t)}</p>`).join('')}</div>
+        <div class="xhs-fmt-rewrite-section"><strong>开头钩子</strong>${hooks.map((t) => `<p>${escapeHtml(t)}</p>`).join('')}</div>
+        <div class="xhs-fmt-rewrite-section"><strong>正文</strong><textarea readonly>${escapeHtml(result.body || '')}</textarea></div>
+        <div class="xhs-fmt-rewrite-section"><strong>封面建议</strong><p>${escapeHtml(result.coverTitle || '')}</p><p>${escapeHtml(result.coverSubtitle || '')}</p></div>
+        <div class="xhs-fmt-rewrite-section"><strong>标签</strong><p>${escapeHtml(tags.join(' '))}</p></div>
+        <div class="xhs-fmt-rewrite-section"><strong>风险提醒</strong>${risks.length ? risks.map((r) => `<p>${escapeHtml(r)}</p>`).join('') : '<p>暂无明显风险。</p>'}</div>
+      `;
+    };
+
+    panel.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
+    panel.querySelector('.xhs-fmt-save-newapi').addEventListener('click', () => saveNewApiSettings(panel));
+    panel.querySelector('.xhs-fmt-run-rewrite').addEventListener('click', async () => {
+      const btn = panel.querySelector('.xhs-fmt-run-rewrite');
+      btn.textContent = '生成中...';
+      try {
+        await saveNewApiSettings(panel);
+        latestResult = await client.rewriteXhs({
+          sourceText: panel.querySelector('.xhs-fmt-rewrite-source').value,
+          goal: panel.querySelector('.xhs-fmt-rewrite-goal').value,
+          industry: panel.querySelector('.xhs-fmt-rewrite-industry').value,
+          accountStyle: activeStyle,
+        });
+        renderResult(latestResult);
+        showTooltip('✅ 仿写稿已生成');
+      } catch (e) {
+        panel.querySelector('.xhs-fmt-rewrite-result').innerHTML = `<div class="xhs-fmt-empty-state">${escapeHtml(e.message || '生成失败')}</div>`;
+        showTooltip('⚠️ ' + (e.message || '生成失败'));
+      } finally {
+        btn.textContent = '生成仿写稿';
+      }
+    });
+    panel.querySelector('.xhs-fmt-apply-rewrite').addEventListener('click', () => applyRewriteResult(latestResult));
+    attachPanel(panel, editor);
+  }
 
   async function openTemplatePanel() {
     if (!state.isPro) {
@@ -828,6 +1293,8 @@
         }
 
         const applyBtn = card.querySelector('.xhs-fmt-card-apply');
+        applyBtn.setAttribute('aria-label', `套用${tpl.name}模板`);
+        applyBtn.title = `套用${tpl.name}模板`;
         applyBtn.addEventListener('mousedown', (e) => {
           e.preventDefault();
           captureBeforeFormat();
@@ -1041,8 +1508,7 @@
     });
     panel.appendChild(tagContainer);
 
-    editor.parentNode?.insertBefore(panel, editor.nextSibling);
-    state.activePanel = panel;
+    attachPanel(panel, editor);
   }
 
   function insertTextAtCursor(text) {
@@ -1101,7 +1567,7 @@
     panel.className = 'xhs-fmt-panel xhs-fmt-panel-large xhs-fmt-image-panel';
     panel.id = 'xhs-fmt-panel-' + uid();
 
-    const autoTitle = imgGen.extractTitle(sourceText);
+    const autoTitle = toCoverTitleText(getCurrentNoteTitle()) || toCoverTitleText(imgGen.extractTitle(sourceText));
     let selectedStyleId = (await loadStorage(CONFIG.LAST_IMAGE_STYLE_KEY)) || 'xhs-pink';
     let selectedLayoutId = (await loadStorage(CONFIG.LAST_IMAGE_LAYOUT_KEY)) || 'classic';
     let selectedSizeKey = (await loadStorage(CONFIG.LAST_IMAGE_SIZE_KEY)) || 'portrait';
@@ -1292,14 +1758,36 @@
     return { title: clean(lines[0] || ''), subtitle: clean(lines[1] || '') };
   }
 
+  function sanitizeCoverText(value) {
+    return String(value || '')
+      .replace(/[\uFFFD]/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/^[^\u4e00-\u9fa5A-Za-z0-9#]+/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function toCoverTitleText(value) {
+    const clean = sanitizeCoverText(value)
+      .replace(/^#+/, '')
+      .replace(/[。！？!?，,；;：:].*$/, '')
+      .trim();
+    return clean.slice(0, 18);
+  }
+
   function findNoteTitleInput() {
     const candidates = [...document.querySelectorAll('input[type="text"], textarea')];
     for (const el of candidates) {
       const hint = (el.placeholder || '') + (el.getAttribute('aria-label') || '') + (el.className || '');
+      if (/输入标题|填写标题|标题/i.test(hint)) return el;
       if (/标题|笔记标题|填写标题|title/i.test(hint)) return el;
       if (el.maxLength > 0 && el.maxLength <= 30 && el.offsetWidth > 100) return el;
     }
     return null;
+  }
+
+  function getCurrentNoteTitle() {
+    return toCoverTitleText(findNoteTitleInput()?.value || '');
   }
 
   function syncTitleToXhs(title) {
@@ -1332,6 +1820,7 @@
 
     let selectedStyleId = 'xhs-hot';
     let selectedSizeKey = 'portrait';
+    let coverLogoDataUrl = null;
 
     const panel = document.createElement('div');
     panel.className = 'xhs-fmt-panel xhs-fmt-panel-large xhs-fmt-image-panel';
@@ -1360,6 +1849,20 @@
         <div class="xhs-fmt-image-field">
           <label>封面风格（8 款）</label><div class="xhs-fmt-cover-styles"></div>
         </div>
+        <div class="xhs-fmt-image-field xhs-fmt-cover-elements">
+          <label>加入你的元素（本地合成，不上传服务器）</label>
+          <div class="xhs-fmt-bg-upload-row">
+            <input type="file" class="xhs-fmt-cover-logo-file" accept="image/*" style="display:none">
+            <button class="xhs-fmt-bg-upload-btn xhs-fmt-cover-logo-upload">上传 Logo / 产品图</button>
+            <button class="xhs-fmt-bg-clear-btn xhs-fmt-cover-logo-clear" style="display:none">清除</button>
+            <span class="xhs-fmt-bg-hint">建议透明 PNG，小于 1MB</span>
+          </div>
+          <div class="xhs-fmt-cover-element-grid">
+            <input type="text" class="xhs-fmt-cover-brand" placeholder="品牌角标，如：运营干货">
+            <input type="text" class="xhs-fmt-cover-sticker" placeholder="爆点贴纸，如：建议收藏">
+            <input type="color" class="xhs-fmt-cover-accent" value="#ff3f62" title="强调色">
+          </div>
+        </div>
         <button class="xhs-fmt-image-generate">🎨 生成封面</button>
         <div class="xhs-fmt-image-preview-area"></div>
       </div>
@@ -1368,6 +1871,31 @@
     panel.querySelector('.xhs-fmt-panel-close').addEventListener('click', () => panel.remove());
     panel.querySelector('.xhs-fmt-cover-title').value = title || '我的小红书笔记';
     panel.querySelector('.xhs-fmt-cover-subtitle').value = subtitle;
+    const logoInput = panel.querySelector('.xhs-fmt-cover-logo-file');
+    const logoUpload = panel.querySelector('.xhs-fmt-cover-logo-upload');
+    const logoClear = panel.querySelector('.xhs-fmt-cover-logo-clear');
+    logoUpload.addEventListener('click', () => logoInput.click());
+    logoClear.addEventListener('click', () => {
+      coverLogoDataUrl = null;
+      logoInput.value = '';
+      logoClear.style.display = 'none';
+      showTooltip('已清除封面元素图');
+    });
+    logoInput.addEventListener('change', () => {
+      const file = logoInput.files?.[0];
+      if (!file) return;
+      if (file.size > 1024 * 1024) {
+        showTooltip('⚠️ Logo / 产品图请小于 1MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        coverLogoDataUrl = reader.result;
+        logoClear.style.display = 'inline-block';
+        showTooltip('✅ 已加入封面元素图');
+      };
+      reader.readAsDataURL(file);
+    });
 
     const sizeBox = panel.querySelector('.xhs-fmt-cover-sizes');
     Object.entries(coverGen.SIZES).forEach(([key, sz]) => {
@@ -1395,11 +1923,14 @@
       styleBox.appendChild(card);
     });
 
-    panel.querySelector('.xhs-fmt-image-generate').addEventListener('click', () => {
+    panel.querySelector('.xhs-fmt-image-generate').addEventListener('click', async () => {
       const coverTitle = panel.querySelector('.xhs-fmt-cover-title').value.trim();
       const coverSub = panel.querySelector('.xhs-fmt-cover-subtitle').value.trim();
       const syncTitle = panel.querySelector('.xhs-fmt-cover-sync-title').checked;
       const preview = panel.querySelector('.xhs-fmt-image-preview-area');
+      const brandText = panel.querySelector('.xhs-fmt-cover-brand').value.trim();
+      const stickerText = panel.querySelector('.xhs-fmt-cover-sticker').value.trim();
+      const accentColor = panel.querySelector('.xhs-fmt-cover-accent').value;
 
       const result = coverGen.generateCover({
         title: coverTitle,
@@ -1407,6 +1938,14 @@
         styleId: selectedStyleId,
         sizeKey: selectedSizeKey,
       });
+      if (result.images?.[0]) {
+        result.images[0].dataUrl = await composeCoverElements(result.images[0].dataUrl, {
+          logoDataUrl: coverLogoDataUrl,
+          brandText,
+          stickerText,
+          accentColor,
+        });
+      }
 
       if (syncTitle && syncTitleToXhs(coverTitle)) {
         showTooltip('✅ 封面已生成，标题已同步');
@@ -1675,6 +2214,101 @@
     return (name || 'note').replace(/[\\/:*?"<>|]/g, '').slice(0, 20);
   }
 
+  function loadImageDataUrl(dataUrl) {
+    return new Promise((resolve, reject) => {
+      if (!dataUrl) { resolve(null); return; }
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    const radius = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  }
+
+  async function composeCoverElements(baseDataUrl, options) {
+    const opts = options || {};
+    if (!opts.logoDataUrl && !opts.brandText && !opts.stickerText) return baseDataUrl;
+    const base = await loadImageDataUrl(baseDataUrl);
+    if (!base) return baseDataUrl;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = base.naturalWidth || base.width;
+    canvas.height = base.naturalHeight || base.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(base, 0, 0, canvas.width, canvas.height);
+
+    const accent = opts.accentColor || '#ff3f62';
+    const pad = Math.round(canvas.width * 0.07);
+    const fontFamily = '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
+
+    if (opts.brandText) {
+      const text = String(opts.brandText).slice(0, 16);
+      ctx.font = `700 ${Math.round(canvas.width * 0.038)}px ${fontFamily}`;
+      const w = Math.ceil(ctx.measureText(text).width + pad * 0.65);
+      const h = Math.round(canvas.width * 0.075);
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 3;
+      roundRectPath(ctx, pad, pad, w, h, h / 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = accent;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, pad + Math.round(pad * 0.32), pad + h / 2);
+    }
+
+    if (opts.stickerText) {
+      const text = String(opts.stickerText).slice(0, 18);
+      ctx.font = `800 ${Math.round(canvas.width * 0.046)}px ${fontFamily}`;
+      const w = Math.ceil(ctx.measureText(text).width + pad * 0.7);
+      const h = Math.round(canvas.width * 0.09);
+      const x = canvas.width - pad - w;
+      const y = canvas.height - pad - h;
+      ctx.fillStyle = accent;
+      roundRectPath(ctx, x, y, w, h, 18);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, x + Math.round(pad * 0.35), y + h / 2);
+    }
+
+    if (opts.logoDataUrl) {
+      try {
+        const logo = await loadImageDataUrl(opts.logoDataUrl);
+        if (logo) {
+          const box = Math.round(canvas.width * 0.16);
+          const x = canvas.width - pad - box;
+          const y = pad;
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          roundRectPath(ctx, x - 8, y - 8, box + 16, box + 16, 18);
+          ctx.fill();
+          const ratio = Math.min(box / logo.width, box / logo.height);
+          const w = logo.width * ratio;
+          const h = logo.height * ratio;
+          ctx.drawImage(logo, x + (box - w) / 2, y + (box - h) / 2, w, h);
+        }
+      } catch (e) {
+        showTooltip('⚠️ 封面元素图合成失败，已保留基础封面');
+      }
+    }
+
+    return canvas.toDataURL('image/png');
+  }
+
   function showImageLightbox(img, allImages) {
     closeImagePreview();
     const overlay = document.createElement('div');
@@ -1817,10 +2451,19 @@
     overlay.id = 'xhs-fmt-pro-modal-overlay';
     overlay.innerHTML = `
       <div id="xhs-fmt-pro-modal">
-        <h2>⭐ 解锁全部创作功能</h2>
-        <p>12 套排版模板 + 图文卡片生成，选中文字一键排版，文案转图片直接发布</p>
-        <span class="xhs-fmt-price">¥29.9 <small>终身买断</small></span>
-        <button class="xhs-fmt-pro-btn-buy">立即升级 →</button>
+        <h2>⭐ 7天免费试用 Pro</h2>
+        <p>先完整体验智能排版、手机预览、账号风格库和本地草稿。确认能帮你稳定发笔记，再决定是否付费。</p>
+        <span class="xhs-fmt-price">¥9.9/月 <small>年付 ¥68</small></span>
+        <div class="xhs-fmt-plan-row">
+          <span>早鸟终身 ¥129</span>
+          <span>运营版 ¥29/月</span>
+        </div>
+        <ul class="xhs-fmt-pro-benefits">
+          <li>把原始素材整理成可发布的小红书结构</li>
+          <li>保存账号人设、固定 CTA、常用标签和历史草稿</li>
+          <li>适合创作者、店主、求职博主和轻量运营</li>
+        </ul>
+        <button class="xhs-fmt-pro-btn-buy">查看升级方案 →</button>
         <br/>
         <button class="xhs-fmt-pro-btn-close">以后再说</button>
         <div style="margin-top:12px; text-align:center;">
@@ -1892,6 +2535,8 @@
       ['XhsCoverGenerator', window.XhsCoverGenerator],
       ['XhsAiImage', window.XhsAiImage],
       ['XhsUploadHelper', window.XhsUploadHelper],
+      ['XhsNewApiClient', window.XhsNewApiClient],
+      ['XhsWorkspace', window.XhsWorkspace],
     ];
     const missing = checks.filter(([, mod]) => !mod).map(([name]) => name);
     if (missing.length) {
@@ -1952,6 +2597,7 @@
       if (!verifyModules()) return;
       await initProStatus();
       await loadLastTemplate();
+      await loadToolbarPreference();
       window.XhsEditorUtils?.initSelectionSaver();
       startObserver();
       initSelectionFloatBtn();

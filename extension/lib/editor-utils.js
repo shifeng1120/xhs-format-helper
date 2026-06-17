@@ -184,6 +184,9 @@
     if (!editor) return '';
     if (editor.tagName === 'TEXTAREA' || editor.tagName === 'INPUT') return editor.value || '';
 
+    const visibleText = editor.innerText || '';
+    if (visibleText.trim()) return visibleText;
+
     const parts = [];
     const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT);
     let n;
@@ -193,7 +196,7 @@
     const joined = parts.join('');
     if (joined.trim()) return joined;
 
-    return editor.innerText || editor.textContent || '';
+    return editor.textContent || '';
   }
 
   function captureFormatContext() {
@@ -231,14 +234,35 @@
     };
   }
 
-  function verifyContent(editor, expected) {
-    const actual = getEditorTextRobust(editor).trim();
-    const exp = (expected || '').trim();
+  function normalizeComparableText(text) {
+    return String(text || '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\u00a0/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  function verifyContent(editor, expected, options) {
+    const actual = normalizeComparableText(getEditorTextRobust(editor));
+    const exp = normalizeComparableText(expected);
+    const opts = options || {};
     if (!exp) return false;
     if (actual === exp) return true;
-    if (actual.length >= exp.length * 0.7) return true;
+
+    if (opts.allowContainingDocument) {
+      if (actual.includes(exp)) return true;
+      const selectedHead = exp.slice(0, Math.min(30, exp.length));
+      return selectedHead.length > 5 && actual.includes(selectedHead);
+    }
+
+    if (actual.includes(exp) && actual.length <= exp.length * 1.15) return true;
     const head = exp.slice(0, Math.min(30, exp.length));
-    return head.length > 5 && actual.includes(head);
+    const tail = exp.slice(Math.max(0, exp.length - 30));
+    const hasHead = head.length > 5 && actual.includes(head);
+    const hasTail = tail.length > 5 && actual.includes(tail);
+    return hasHead && hasTail && actual.length <= exp.length * 1.2;
   }
 
   function triggerInput(el, value) {
@@ -285,7 +309,8 @@
     sel.addRange(range);
   }
 
-  async function replaceViaClipboard(editor, text) {
+  async function replaceViaClipboard(editor, text, options) {
+    const verifyOptions = options?.verifyOptions || {};
     try {
       await navigator.clipboard.writeText(text);
       selectAllInEditor(editor);
@@ -297,12 +322,12 @@
         const evt = new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dt });
         editor.dispatchEvent(evt);
         await sleep(120);
-        if (verifyContent(editor, text)) return true;
+        if (verifyContent(editor, text, verifyOptions)) return true;
       } catch (e) { /* ignore */ }
 
       const ok = document.execCommand('paste');
       await sleep(120);
-      if (ok && verifyContent(editor, text)) return true;
+      if (ok && verifyContent(editor, text, verifyOptions)) return true;
     } catch (e) {
       console.warn('[排版助手] 剪贴板粘贴失败:', e);
     }
@@ -336,7 +361,7 @@
     if (textareaSel?.start != null && textareaSel.end > textareaSel.start) {
       const val = editor.value;
       const next = val.slice(0, textareaSel.start) + text + val.slice(textareaSel.end);
-      return setNativeValue(editor, next) && verifyContent(editor, text);
+      return setNativeValue(editor, next) && verifyContent(editor, text, { allowContainingDocument: true });
     }
     return setNativeValue(editor, text) && verifyContent(editor, text);
   }
@@ -361,11 +386,17 @@
         opts.savedRange.deleteContents();
         opts.savedRange.insertNode(document.createTextNode(text));
         triggerInput(editor, text);
-        if (verifyContent(editor, text)) return true;
+        if (verifyContent(editor, text, { allowContainingDocument: true })) return true;
       } catch (e) { /* fall through */ }
     }
 
-    if (await replaceViaClipboard(editor, text)) return true;
+    if (replaceAll) {
+      return setProseMirrorContent(editor, text);
+    }
+
+    if (await replaceViaClipboard(editor, text, {
+      verifyOptions: { allowContainingDocument: true },
+    })) return true;
     if (setProseMirrorContent(editor, text)) return true;
 
     selectAllInEditor(editor);

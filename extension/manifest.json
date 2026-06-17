@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "小红书排版助手 Pro - 爆款笔记创作工具",
+  "name": "红薯创作助手 - 小红书本地创作增强工具",
   "version": "3.0.0",
-  "description": "为小红书创作者打造的一站式排版工具：智能模板推荐、一键爆款排版、封面生成、图文卡片、AI 配图与话题标签管理。",
+  "description": "小红书创作页里的本地内容增强工具：排版、手机预览、账号风格、草稿、封面、图文卡片与话题标签一站完成。",
   "permissions": [
     "storage",
     "clipboardWrite"
@@ -15,7 +15,7 @@
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "小红书排版助手 Pro",
+    "default_title": "红薯创作助手",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -38,6 +38,8 @@
         "lib/cover-generator.js",
         "lib/ai-image.js",
         "lib/upload-helper.js",
+        "lib/newapi-client.js",
+        "lib/workspace.js",
         "content/content.js"
       ],
       "css": [

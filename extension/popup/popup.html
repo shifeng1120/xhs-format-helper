@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>小红书排版助手 Pro</title>
+  <title>红薯创作助手</title>
   <style>
     :root {
       --ink: #211f2f;
@@ -252,9 +252,8 @@
     }
 
     .price-row {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 12px;
       margin: 12px 0;
       padding: 12px;
@@ -273,6 +272,35 @@
       font-size: 12px;
       color: var(--muted);
       font-weight: 600;
+    }
+
+    .price-note {
+      margin: 6px 0 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .plan-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .plan-chip {
+      padding: 9px 10px;
+      border: 1px solid rgba(42, 34, 55, 0.08);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.76);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .plan-chip strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+      color: var(--ink);
     }
 
     .input-panel {
@@ -351,7 +379,7 @@
 <body>
   <main class="shell">
     <section class="hero">
-      <div class="eyebrow">Creator OS · v<span id="version">3.0.0</span></div>
+      <div class="eyebrow">红薯创作助手 · v<span id="version">3.0.0</span></div>
       <h1>让一篇普通笔记，像认真运营过。</h1>
       <p>智能识别内容类型，自动套用爆款结构，顺手生成封面、图文卡片和话题标签。</p>
     </section>
@@ -388,7 +416,7 @@
         <li><span>🖼️</span><span><b>图文卡片</b>：把长文拆成多张小红书图片，可下载后直接发布。</span></li>
       </ul>
       <div class="actions">
-        <button id="btn-open-editor" class="btn btn-primary">打开小红书发布页</button>
+        <button id="btn-open-editor" class="btn btn-primary">打开小红书创作页</button>
         <button id="btn-contact" class="btn btn-line">反馈问题 / 提需求</button>
       </div>
     </section>
@@ -397,7 +425,7 @@
       <h2>Pro 已激活 <span class="mini">所有能力已解锁</span></h2>
       <ul class="feature-list">
         <li><span>✅</span><span>排版模板、图文生成、AI 配图、封面、话题标签全部可用。</span></li>
-        <li><span>💡</span><span>建议在发布页选中正文后使用浮动按钮，最快。</span></li>
+        <li><span>💡</span><span>建议在创作页选中正文后使用浮动按钮，最快。</span></li>
       </ul>
       <div class="actions">
         <button id="btn-deactivate-pro" class="btn btn-soft">退出 Pro 状态</button>
@@ -405,21 +433,26 @@
     </section>
 
     <section id="pro-upgrade-section" class="section">
-      <h2>升级 Pro <span class="mini">终身买断</span></h2>
+      <h2>升级 Pro <span class="mini">7天免费试用</span></h2>
       <div class="price-row">
         <div>
-          <div class="price">¥29.9</div>
-          <small>一次购买，长期使用</small>
+          <div class="price">¥9.9<small>/月</small></div>
+          <p class="price-note">低门槛个人版，适合先把创作页工作流用顺。</p>
         </div>
-        <small>适合创作者、运营、店主、求职博主</small>
+        <div class="plan-grid">
+          <div class="plan-chip"><strong>年付 ¥68</strong>平均不到 ¥6/月，适合认真做号。</div>
+          <div class="plan-chip"><strong>早鸟终身 ¥129</strong>本地能力长期用，AI 额度另计。</div>
+          <div class="plan-chip"><strong>运营版 ¥29/月</strong>给店主、代运营和内容运营者。</div>
+          <div class="plan-chip"><strong>运营年付 ¥198</strong>多账号、批量和行业模板更划算。</div>
+        </div>
       </div>
       <ul class="feature-list">
-        <li><span>🚀</span><span>智能模板推荐 + 快速排版，减少反复调格式。</span></li>
-        <li><span>📌</span><span>封面、图文卡片、标签一条链路完成。</span></li>
-        <li><span>🔒</span><span>本地运行，文案不经过自建服务器。</span></li>
+        <li><span>🚀</span><span>7天内完整体验排版、封面、图文卡片和标签链路。</span></li>
+        <li><span>📌</span><span>Pro 主打可发布成品：标题结构、爆款模板、封面和图文卡片。</span></li>
+        <li><span>🔒</span><span>基础处理本地运行，先试出价值，再决定是否付费。</span></li>
       </ul>
       <div class="actions">
-        <button id="btn-buy-pro" class="btn btn-dark">立即购买 Pro</button>
+        <button id="btn-buy-pro" class="btn btn-dark">查看升级方案</button>
         <button id="btn-show-activate" class="btn btn-soft">已有激活码，点此激活</button>
       </div>
       <div id="activate-section" class="input-panel">
@@ -433,7 +466,7 @@
       <div id="activate-result" class="hidden"></div>
     </section>
 
-    <div class="footer">Made for creators who care about taste and speed.</div>
+    <div class="footer">小红书创作页里的本地内容增强工具</div>
   </main>
 
   <script src="popup.js"></script>

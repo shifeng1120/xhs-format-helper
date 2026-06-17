@@ -12,6 +12,8 @@ Thumbs.db
 *.zip
 *.crx
 *.pem
+node_modules/
+local-agent/node_modules/
 
 # Java (crx4chrome tools etc.)
 *.class

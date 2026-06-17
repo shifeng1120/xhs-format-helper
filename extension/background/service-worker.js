@@ -9,7 +9,7 @@ const STORAGE_KEYS = {
   TRIAL_START: 'xhs_fmt_trial_start',
 };
 
-const TRIAL_DAYS = 3; // 试用天数
+const TRIAL_DAYS = 7; // 试用天数
 
 function licenseChecksum(str) {
   let sum = 0;
@@ -94,10 +94,10 @@ chrome.runtime.onInstalled.addListener((details) => {
       [STORAGE_KEYS.STATS]: stats,
       [STORAGE_KEYS.TRIAL_START]: now,
     });
-    console.log('[小红书排版助手] 已安装，3天试用期开始');
+    console.log('[红薯创作助手] 已安装，7天试用期开始');
   } else if (details.reason === 'update') {
     const version = chrome.runtime.getManifest().version;
-    console.log('[小红书排版助手] 已更新:', details.previousVersion, '→', version);
+    console.log('[红薯创作助手] 已更新:', details.previousVersion, '→', version);
     chrome.storage.local.set({ xhs_fmt_needs_refresh: version });
   }
 });
